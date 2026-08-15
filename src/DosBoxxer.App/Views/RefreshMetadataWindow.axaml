@@ -1,0 +1,74 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                x:Class="DosBoxxer.App.Views.RefreshMetadataWindow"
+                Title="{loc:Localize Refresh.Title}"
+                Width="560"
+                SizeToContent="Height"
+                CanResize="False"
+                Background="{DynamicResource SurfaceBrush}">
+
+  <StackPanel Margin="26" Spacing="16">
+
+    <TextBlock Classes="h1" Text="{loc:Localize Refresh.Title}" />
+    <TextBlock Classes="secondary wrap" Text="{Binding Message}" />
+
+    <StackPanel Spacing="6">
+      <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.ScreenScraperId}" />
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding ProviderGameId, Mode=TwoWay}" />
+        <Button Grid.Column="1"
+                Content="{loc:Localize Refresh.SearchAgain}"
+                Command="{Binding SearchAgainCommand}" />
+      </Grid>
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Classes="sectionLabel" Text="{loc:Localize Refresh.SelectFields}" />
+        <Button Grid.Column="1"
+                Classes="subtle"
+                Padding="6,2"
+                Content="{loc:Localize Refresh.SelectAll}"
+                Command="{Binding SelectAllCommand}" />
+      </Grid>
+
+      <Border Classes="card" Padding="14">
+        <ItemsControl ItemsSource="{Binding Fields}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Width="240" Spacing="6">
+                <CheckBox Content="{Binding DisplayName}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                <Border Classes="chip" VerticalAlignment="Center" IsVisible="{Binding IsManual}">
+                  <TextBlock Text="{loc:Localize Common.Edit}" />
+                </Border>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+    </StackPanel>
+
+    <CheckBox Content="{loc:Localize Refresh.OverwriteManual}"
+              IsChecked="{Binding OverwriteManualEdits, Mode=TwoWay}" />
+    <TextBlock Classes="tertiary wrap" Text="{loc:Localize Refresh.KeepManual}" />
+
+    <Border Classes="errorBanner" IsVisible="{Binding HasValidationMessage}">
+      <TextBlock Classes="wrap" Text="{Binding ValidationMessage}" />
+    </Border>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="{loc:Localize Common.Cancel}" Command="{Binding CancelCommand}" IsCancel="True" />
+      <Button Classes="primary"
+              Content="{loc:Localize Refresh.Start}"
+              Command="{Binding ConfirmCommand}"
+              IsDefault="True" />
+    </StackPanel>
+  </StackPanel>
+</v:DialogWindow>

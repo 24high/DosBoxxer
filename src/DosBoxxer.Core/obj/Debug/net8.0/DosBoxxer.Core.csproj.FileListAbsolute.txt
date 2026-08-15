@@ -1,0 +1,12 @@
+/home/dh/DosBoxxer/src/DosBoxxer.Core/bin/Debug/net8.0/DosBoxxer.Core.deps.json
+/home/dh/DosBoxxer/src/DosBoxxer.Core/bin/Debug/net8.0/DosBoxxer.Core.dll
+/home/dh/DosBoxxer/src/DosBoxxer.Core/bin/Debug/net8.0/DosBoxxer.Core.pdb
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.csproj.AssemblyReference.cache
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.AssemblyInfoInputs.cache
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.AssemblyInfo.cs
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.csproj.CoreCompileInputs.cache
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.dll
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/refint/DosBoxxer.Core.dll
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/DosBoxxer.Core.pdb
+/home/dh/DosBoxxer/src/DosBoxxer.Core/obj/Debug/net8.0/ref/DosBoxxer.Core.dll

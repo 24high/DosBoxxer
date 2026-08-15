@@ -1,0 +1,569 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:DosBoxxer.App.Localization"
+        xmlns:conv="using:DosBoxxer.App.Converters"
+        x:Class="DosBoxxer.App.Views.MainWindow"
+        x:Name="Root"
+        Title="DosBoxxer"
+        Width="1360" Height="860"
+        MinWidth="900" MinHeight="600"
+        Background="{DynamicResource AppBackgroundBrush}"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.Resources>
+    <conv:IconKeyToGeometryConverter x:Key="IconKey" />
+  </Window.Resources>
+
+  <Grid RowDefinitions="*,Auto">
+
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+
+      <!-- ==================== Left: categories ==================== -->
+      <Border Grid.Column="0"
+              Width="220"
+              Classes="panel"
+              BorderThickness="0,0,1,0">
+        <Grid RowDefinitions="Auto,*">
+
+          <StackPanel Grid.Row="0" Margin="18,18,18,10" Spacing="1">
+            <TextBlock Classes="h1" Text="{loc:Localize App.Title}" />
+            <TextBlock Classes="tertiary" Text="{loc:Localize App.Subtitle}" />
+          </StackPanel>
+
+          <ScrollViewer Grid.Row="1"
+                        Padding="10,0,10,14"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Categories}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Button Classes="categoryTile"
+                          Classes.selected="{Binding IsSelected}"
+                          Command="{Binding #Root.DataContext.SelectCategoryCommand}"
+                          CommandParameter="{Binding}"
+                          AutomationProperties.Name="{Binding AccessibleName}"
+                          ToolTip.Tip="{Binding DisplayName}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <PathIcon Grid.Column="0"
+                                Width="17" Height="17"
+                                Margin="0,0,11,0"
+                                Data="{Binding IconKey, Converter={StaticResource IconKey}}" />
+                      <TextBlock Grid.Column="1"
+                                 Text="{Binding DisplayName}"
+                                 VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" />
+                      <Border Grid.Column="2"
+                              Classes="countBadge"
+                              IsVisible="{Binding ShowCount}"
+                              VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Count}" />
+                      </Border>
+                    </Grid>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <!-- ==================== Middle: library ==================== -->
+      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*">
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0"
+                Classes="panel"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+          <!--
+            The search field must stretch inside the star column rather than claim a minimum
+            width: with the details pane open the remaining toolbar width can drop below any
+            fixed minimum, and the field would then overflow on top of the next column.
+          -->
+          <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+
+            <Panel Grid.Column="0" MaxWidth="420" HorizontalAlignment="Stretch" Margin="0,0,12,0">
+              <TextBox x:Name="SearchBox"
+                       Padding="34,7,10,7"
+                       Text="{Binding SearchText, Mode=TwoWay}"
+                       Watermark="{loc:Localize Toolbar.SearchPlaceholder}"
+                       AutomationProperties.Name="{loc:Localize Common.Search}" />
+              <PathIcon Data="{StaticResource IconSearch}"
+                        Width="15" Height="15"
+                        Margin="11,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False" />
+            </Panel>
+
+            <ComboBox Grid.Column="1"
+                      MinWidth="150"
+                      Margin="0,0,8,0"
+                      ItemsSource="{Binding SortOptions}"
+                      SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                      ToolTip.Tip="{loc:Localize Toolbar.SortBy}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.SortBy}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ComboBox Grid.Column="2"
+                      MinWidth="104"
+                      Margin="0,0,8,0"
+                      ItemsSource="{Binding CoverSizes}"
+                      SelectedItem="{Binding SelectedCoverSize, Mode=TwoWay}"
+                      ToolTip.Tip="{loc:Localize Toolbar.CoverSize}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.CoverSize}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2" Margin="0,0,8,0">
+              <Button Classes="icon"
+                      Command="{Binding LoadLibraryCommand}"
+                      ToolTip.Tip="{loc:Localize Toolbar.Refresh}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.Refresh}">
+                <PathIcon Data="{StaticResource IconRefresh}" />
+              </Button>
+              <Button Classes="icon"
+                      Command="{Binding ToggleDetailsPaneCommand}"
+                      ToolTip.Tip="{loc:Localize Toolbar.ToggleDetails}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.ToggleDetails}">
+                <PathIcon Data="{StaticResource IconPanel}" />
+              </Button>
+              <Button Classes="icon"
+                      Command="{Binding OpenSettingsCommand}"
+                      ToolTip.Tip="{loc:Localize Toolbar.Settings}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.Settings}">
+                <PathIcon Data="{StaticResource IconSettings}" />
+              </Button>
+            </StackPanel>
+
+            <Button Grid.Column="4"
+                    Classes="primary"
+                    Command="{Binding AddGameCommand}"
+                    AutomationProperties.Name="{loc:Localize Toolbar.AddGame}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14" />
+                <TextBlock Text="{loc:Localize Toolbar.AddGame}" />
+              </StackPanel>
+            </Button>
+          </Grid>
+        </Border>
+
+        <!-- Error banner -->
+        <Border Grid.Row="1"
+                Classes="errorBanner"
+                Margin="16,12,16,0"
+                IsVisible="{Binding HasError}">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <PathIcon Grid.Column="0" Data="{StaticResource IconWarning}" Margin="0,0,10,0" />
+            <TextBlock Grid.Column="1"
+                       Classes="wrap"
+                       VerticalAlignment="Center"
+                       Text="{Binding ErrorMessage}" />
+            <Button Grid.Column="2"
+                    Classes="icon"
+                    Command="{Binding DismissErrorCommand}"
+                    AutomationProperties.Name="{loc:Localize Common.Close}">
+              <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
+            </Button>
+          </Grid>
+        </Border>
+
+        <!-- Library grid + states -->
+        <Panel Grid.Row="2">
+
+          <ListBox x:Name="GameList"
+                   Classes="gameGrid"
+                   ItemsSource="{Binding Games}"
+                   SelectedItem="{Binding SelectedCard, Mode=TwoWay}"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto"
+                   DoubleTapped="OnGameListDoubleTapped"
+                   KeyDown="OnGameListKeyDown">
+
+            <ListBox.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="{loc:Localize Context.Play}" Command="{Binding PlayCommand}" />
+                <MenuItem Header="{loc:Localize Context.Edit}" Command="{Binding EditGameCommand}" />
+                <MenuItem Header="{loc:Localize Context.RefreshMetadata}" Command="{Binding RefreshMetadataCommand}" />
+                <Separator />
+                <MenuItem Header="{loc:Localize Context.OpenFolder}" Command="{Binding OpenGameFolderCommand}" />
+                <MenuItem Header="{loc:Localize Context.ChangeCover}" Command="{Binding ChangeCoverCommand}" />
+                <MenuItem Header="{loc:Localize Context.ChangeLaunchExecutable}" Command="{Binding ChangeLaunchFileCommand}" />
+                <MenuItem Header="{loc:Localize Context.DosBoxSettings}" Command="{Binding EditGameCommand}" />
+                <MenuItem Header="{loc:Localize Context.ToggleFavorite}" Command="{Binding ToggleFavoriteCommand}" />
+                <Separator />
+                <MenuItem Header="{loc:Localize Context.Remove}" Command="{Binding RemoveGameCommand}" />
+              </ContextMenu>
+            </ListBox.ContextMenu>
+
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="gameCard"
+                        Classes.selected="{Binding IsSelected}"
+                        Width="{Binding CoverWidth}"
+                        AutomationProperties.Name="{Binding AccessibleName}"
+                        ToolTip.Tip="{Binding Title}">
+                  <StackPanel>
+                    <!-- Cover area with a fixed 3:4 ratio so tiles align perfectly -->
+                    <Panel Height="{Binding CoverHeight}">
+                      <Border Background="{DynamicResource PlaceholderBrush}"
+                              CornerRadius="11,11,0,0"
+                              IsVisible="{Binding !HasThumbnail}">
+                        <TextBlock Text="{Binding Initials}"
+                                   FontSize="34"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                      </Border>
+
+                      <Border CornerRadius="11,11,0,0" ClipToBounds="True">
+                        <Image Source="{Binding Thumbnail}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasThumbnail}" />
+                      </Border>
+
+                      <PathIcon Data="{StaticResource IconFavorite}"
+                                Width="15" Height="15"
+                                Margin="0,8,8,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Foreground="{DynamicResource FavoriteBrush}"
+                                IsVisible="{Binding IsFavorite}" />
+                    </Panel>
+
+                    <StackPanel Margin="10,8,10,10" Spacing="1">
+                      <TextBlock Text="{Binding Title}"
+                                 FontWeight="SemiBold"
+                                 MaxLines="2"
+                                 TextWrapping="Wrap"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Classes="tertiary"
+                                 Text="{Binding SubTitle}"
+                                 IsVisible="{Binding SubTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <!-- Empty library -->
+          <StackPanel HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Spacing="14"
+                      MaxWidth="420"
+                      IsVisible="{Binding IsLibraryEmpty}">
+            <Border Width="86" Height="86"
+                    CornerRadius="43"
+                    Background="{DynamicResource AccentSoftBrush}"
+                    HorizontalAlignment="Center">
+              <PathIcon Data="{StaticResource IconAllGames}"
+                        Width="36" Height="36"
+                        Foreground="{DynamicResource AccentBrush}" />
+            </Border>
+            <TextBlock Classes="h1 wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Library.EmptyTitle}" />
+            <TextBlock Classes="secondary wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Library.EmptySubtitle}" />
+            <Button Classes="primary"
+                    HorizontalAlignment="Center"
+                    Command="{Binding AddGameCommand}"
+                    Content="{loc:Localize Library.AddFirstGame}" />
+          </StackPanel>
+
+          <!-- No search results -->
+          <StackPanel HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Spacing="8"
+                      MaxWidth="420"
+                      IsVisible="{Binding HasNoResults}">
+            <TextBlock Classes="h2 wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Library.NoResultsTitle}" />
+            <TextBlock Classes="secondary wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Library.NoResultsSubtitle}" />
+          </StackPanel>
+
+          <!-- Busy overlay -->
+          <Border Background="#B0FFFFFF" IsVisible="{Binding IsBusy}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+              <ProgressBar IsIndeterminate="True" Width="180" />
+              <TextBlock Classes="secondary"
+                         HorizontalAlignment="Center"
+                         Text="{Binding StatusMessage}" />
+            </StackPanel>
+          </Border>
+        </Panel>
+      </Grid>
+
+      <!-- ==================== Right: details ==================== -->
+      <Border Grid.Column="2"
+              Width="360"
+              Classes="panel"
+              BorderThickness="1,0,0,0"
+              IsVisible="{Binding IsDetailsPaneVisible}">
+
+        <Panel>
+          <!-- Nothing selected -->
+          <StackPanel VerticalAlignment="Center"
+                      Margin="26"
+                      Spacing="8"
+                      IsVisible="{Binding !Details.HasGame}">
+            <TextBlock Classes="h2 wrap"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Details.NoSelectionTitle}" />
+            <TextBlock Classes="secondary wrap"
+                       TextAlignment="Center"
+                       Text="{loc:Localize Details.NoSelectionSubtitle}" />
+          </StackPanel>
+
+          <ScrollViewer IsVisible="{Binding Details.HasGame}"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="22,20,22,26" Spacing="16">
+
+              <!-- Cover -->
+              <Panel Height="300">
+                <Border Background="{DynamicResource PlaceholderBrush}"
+                        CornerRadius="{DynamicResource RadiusLarge}"
+                        IsVisible="{Binding !Details.HasCover}">
+                  <TextBlock Text="{Binding Details.Initials}"
+                             FontSize="52"
+                             FontWeight="SemiBold"
+                             Foreground="White"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+                <Border CornerRadius="{DynamicResource RadiusLarge}"
+                        ClipToBounds="True"
+                        IsVisible="{Binding Details.HasCover}">
+                  <Image Source="{Binding Details.Cover}" Stretch="Uniform" />
+                </Border>
+              </Panel>
+
+              <!-- Title block -->
+              <StackPanel Spacing="4">
+                <TextBlock Classes="h1 wrap" Text="{Binding Details.Title}" />
+                <TextBlock Classes="secondary wrap"
+                           Text="{Binding Details.Genres}"
+                           IsVisible="{Binding Details.HasGenres}" />
+              </StackPanel>
+
+              <!-- Primary actions -->
+              <StackPanel Spacing="8">
+                <Button Classes="primary"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding PlayCommand}"
+                        IsEnabled="{Binding !IsGameRunning}"
+                        AutomationProperties.Name="{loc:Localize Details.Play}">
+                  <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconPlay}" Width="14" Height="14" />
+                    <TextBlock Text="{loc:Localize Details.Play}" />
+                  </StackPanel>
+                </Button>
+
+                <!--
+                  One button per row rather than a 2x2 grid: the labels differ a lot in length
+                  across the nine languages, and a single column never has to truncate them.
+                -->
+                <StackPanel Spacing="2">
+                  <Button Classes="subtle"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Command="{Binding EditGameCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14" />
+                      <TextBlock Text="{loc:Localize Details.Edit}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="subtle"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Command="{Binding RefreshMetadataCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14" />
+                      <TextBlock Text="{loc:Localize Details.RefreshMetadata}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="subtle"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Command="{Binding OpenGameFolderCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                      <TextBlock Text="{loc:Localize Details.OpenFolder}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="subtle"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Command="{Binding ToggleFavoriteCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <PathIcon Data="{StaticResource IconFavoriteOutline}" Width="14" Height="14" />
+                      <TextBlock Text="{Binding Details.FavoriteLabel}" />
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+
+                <Button Classes="danger"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding RemoveGameCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconTrash}" Width="14" Height="14"
+                              Foreground="{DynamicResource DangerBrush}" />
+                    <TextBlock Text="{loc:Localize Details.Remove}" />
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+
+              <Border Classes="separator" />
+
+              <!-- Facts (rows hide themselves when the value is unknown) -->
+              <StackPanel Spacing="9">
+                <Grid ColumnDefinitions="118,*" IsVisible="{Binding Details.HasPublisher}">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Publisher}" />
+                  <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding Details.Publisher}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*" IsVisible="{Binding Details.HasDeveloper}">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Developer}" />
+                  <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding Details.Developer}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*" IsVisible="{Binding Details.HasReleaseYear}">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Year}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.ReleaseYear}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*" IsVisible="{Binding Details.HasPlatform}">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Platform}" />
+                  <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding Details.Platform}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*" IsVisible="{Binding Details.HasPlayers}">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Players}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.Players}" />
+                </Grid>
+              </StackPanel>
+
+              <!-- Description -->
+              <StackPanel Spacing="6" IsVisible="{Binding Details.HasDescription}">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Details.Description}" />
+                <TextBlock Classes="wrap secondary" Text="{Binding Details.Description}" />
+              </StackPanel>
+
+              <!-- Screenshots -->
+              <StackPanel Spacing="8" IsVisible="{Binding Details.HasScreenshots}">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Details.Screenshots}" />
+                <ItemsControl ItemsSource="{Binding Details.Screenshots}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Classes="icon"
+                              Padding="0"
+                              Margin="0,0,8,8"
+                              Command="{Binding #Root.DataContext.OpenScreenshotCommand}"
+                              CommandParameter="{Binding}"
+                              AutomationProperties.Name="{Binding AccessibleName}"
+                              ToolTip.Tip="{Binding AccessibleName}">
+                        <Border Width="145" Height="109"
+                                CornerRadius="{DynamicResource RadiusMedium}"
+                                ClipToBounds="True"
+                                Background="{DynamicResource SurfaceSunkenBrush}">
+                          <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                        </Border>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+
+              <Border Classes="separator" />
+
+              <!-- Statistics -->
+              <StackPanel Spacing="9">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Details.Statistics}" />
+                <Grid ColumnDefinitions="118,*">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.DateAdded}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.DateAdded}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.LastPlayed}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.LastPlayed}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.PlayCount}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.PlayCount}" />
+                </Grid>
+                <Grid ColumnDefinitions="118,*">
+                  <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.PlayTime}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Details.PlayTime}" />
+                </Grid>
+              </StackPanel>
+
+              <Border Classes="separator" />
+
+              <!-- Files -->
+              <StackPanel Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Details.Files}" />
+                <TextBlock Classes="secondary" Text="{loc:Localize Details.GameFolder}" />
+                <TextBlock Classes="mono wrap"
+                           Text="{Binding Details.GameDirectory}"
+                           ToolTip.Tip="{Binding Details.GameDirectory}" />
+                <TextBlock Classes="secondary" Margin="0,6,0,0" Text="{loc:Localize Details.LaunchFile}" />
+                <TextBlock Classes="mono wrap" Text="{Binding Details.LaunchFile}" />
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+        </Panel>
+      </Border>
+    </Grid>
+
+    <!-- ==================== Status bar ==================== -->
+    <Border Grid.Row="1"
+            Classes="panel"
+            BorderThickness="0,1,0,0"
+            Padding="16,7">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+          <PathIcon Data="{StaticResource IconInfo}" Width="13" Height="13" />
+          <TextBlock Classes="tertiary"
+                     VerticalAlignment="Center"
+                     Text="{Binding StatusMessage}" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="tertiary"
+                     VerticalAlignment="Center"
+                     Text="{Binding GameCountText}" />
+          <Border Classes="chip" IsVisible="{Binding IsGameRunning}">
+            <TextBlock Text="{Binding RunningGameText}" />
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

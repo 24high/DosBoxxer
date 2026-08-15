@@ -1,0 +1,209 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                x:Class="DosBoxxer.App.Views.SettingsWindow"
+                Title="{loc:Localize Settings.Title}"
+                Width="780" Height="720"
+                MinWidth="640" MinHeight="560"
+                Background="{DynamicResource AppBackgroundBrush}">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <Border Grid.Row="0" Classes="panel" BorderThickness="0,0,0,1" Padding="26,18">
+      <TextBlock Classes="h1" Text="{loc:Localize Settings.Title}" />
+    </Border>
+
+    <ScrollViewer Grid.Row="1" Padding="26,20" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="18">
+
+        <!-- ==================== DOSBox ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionDosBox}" />
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.DosBoxExecutable}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0"
+                         Margin="0,0,8,0"
+                         Text="{Binding DosBoxExecutablePath, Mode=TwoWay}"
+                         AutomationProperties.Name="{loc:Localize Settings.DosBoxExecutable}" />
+                <Button Grid.Column="1"
+                        Content="{loc:Localize Common.Browse}"
+                        Command="{Binding BrowseDosBoxExecutableCommand}" />
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.DosBoxExecutableHint}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.BaseConfig}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0"
+                         Margin="0,0,8,0"
+                         Text="{Binding BaseDosBoxConfigPath, Mode=TwoWay}"
+                         AutomationProperties.Name="{loc:Localize Settings.BaseConfig}" />
+                <Button Grid.Column="1"
+                        Content="{loc:Localize Common.Browse}"
+                        Command="{Binding BrowseBaseConfigCommand}" />
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.BaseConfigHint}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.AdditionalArguments}" />
+              <TextBox Text="{Binding DosBoxAdditionalArguments, Mode=TwoWay}" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.AdditionalArgumentsHint}" />
+            </StackPanel>
+
+            <CheckBox Content="{loc:Localize Settings.CloseAfterExit}"
+                      IsChecked="{Binding CloseDosBoxAfterExit, Mode=TwoWay}" />
+          </StackPanel>
+        </Border>
+
+        <!-- ==================== MobyGames ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionMobyGames}" />
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyHint}" />
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyApiKey}" />
+              <TextBox Text="{Binding MobyGamesApiKey, Mode=TwoWay}"
+                       PasswordChar="•"
+                       AutomationProperties.Name="{loc:Localize Settings.MobyApiKey}" />
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyPlatformId}" />
+                <TextBox Text="{Binding MobyGamesPlatformId, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyMaxScreenshots}" />
+                <NumericUpDown Value="{Binding MobyGamesMaxScreenshots, Mode=TwoWay}"
+                               Minimum="0" Maximum="20" Increment="1"
+                               FormatString="0" />
+              </StackPanel>
+            </Grid>
+
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyPlatformIdHint}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button Content="{loc:Localize Settings.TestConnection}"
+                      Command="{Binding TestConnectionCommand}"
+                      IsEnabled="{Binding !IsTesting}" />
+              <ProgressBar IsIndeterminate="True" Width="110" VerticalAlignment="Center"
+                           IsVisible="{Binding IsTesting}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- ==================== Language ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionLanguage}" />
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.Language}" />
+              <ComboBox HorizontalAlignment="Left"
+                        MinWidth="240"
+                        ItemsSource="{Binding Languages}"
+                        SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                        AutomationProperties.Name="{loc:Localize Settings.Language}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.LanguageHint}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- ==================== Library ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionLibrary}" />
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.CoverSize}" />
+              <ComboBox HorizontalAlignment="Left"
+                        MinWidth="200"
+                        ItemsSource="{Binding CoverSizes}"
+                        SelectedItem="{Binding SelectedCoverSize, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.DoubleClickAction}" />
+              <RadioButton GroupName="DoubleClick"
+                           Content="{loc:Localize Settings.DoubleClickPlay}"
+                           IsChecked="{Binding DoubleClickPlays, Mode=TwoWay}" />
+              <RadioButton GroupName="DoubleClick"
+                           Content="{loc:Localize Settings.DoubleClickDetails}"
+                           IsChecked="{Binding !DoubleClickPlays}" />
+            </StackPanel>
+
+            <CheckBox Content="{loc:Localize Settings.ConfirmRemove}"
+                      IsChecked="{Binding ConfirmBeforeRemoving, Mode=TwoWay}" />
+            <CheckBox Content="{loc:Localize Settings.AutoFetchMetadata}"
+                      IsChecked="{Binding AutoFetchMetadata, Mode=TwoWay}" />
+            <CheckBox Content="{loc:Localize Settings.CacheScreenshots}"
+                      IsChecked="{Binding CacheScreenshots, Mode=TwoWay}" />
+            <CheckBox Content="{loc:Localize Settings.RememberWindow}"
+                      IsChecked="{Binding RememberWindowState, Mode=TwoWay}" />
+          </StackPanel>
+        </Border>
+
+        <!-- ==================== Storage ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionCache}" />
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.DataFolder}" />
+              <TextBlock Classes="mono wrap" Text="{Binding DataFolder}" />
+            </StackPanel>
+
+            <TextBlock Classes="secondary" Text="{Binding CacheSizeText}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="{loc:Localize Settings.OpenDataFolder}" Command="{Binding OpenDataFolderCommand}" />
+              <Button Content="{loc:Localize Settings.ClearCache}" Command="{Binding ClearCacheCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="2" Classes="panel" BorderThickness="0,1,0,0" Padding="26,14">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+          <Border Classes="errorBanner" IsVisible="{Binding HasValidationMessage}">
+            <TextBlock Classes="wrap" Text="{Binding ValidationMessage}" />
+          </Border>
+          <Border Classes="infoBanner" IsVisible="{Binding HasStatusMessage}">
+            <TextBlock Classes="wrap" Text="{Binding StatusMessage}" />
+          </Border>
+        </StackPanel>
+
+        <Button Grid.Column="1"
+                Margin="0,0,8,0"
+                Content="{loc:Localize Common.Cancel}"
+                Command="{Binding CancelCommand}"
+                IsCancel="True" />
+        <Button Grid.Column="2"
+                Classes="primary"
+                Content="{loc:Localize Common.Save}"
+                Command="{Binding SaveCommand}"
+                IsDefault="True" />
+      </Grid>
+    </Border>
+  </Grid>
+</v:DialogWindow>

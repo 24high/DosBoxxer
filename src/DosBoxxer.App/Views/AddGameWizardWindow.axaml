@@ -1,0 +1,222 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                x:Class="DosBoxxer.App.Views.AddGameWizardWindow"
+                Title="{loc:Localize Wizard.Title}"
+                Width="760" Height="620"
+                MinWidth="620" MinHeight="520"
+                Background="{DynamicResource AppBackgroundBrush}">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- Header -->
+    <Border Grid.Row="0" Classes="panel" BorderThickness="0,0,0,1" Padding="26,18">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="tertiary" Text="{Binding StepIndicator}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step1Title}" IsVisible="{Binding IsStep1}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step2Title}" IsVisible="{Binding IsStep2}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step3Title}" IsVisible="{Binding IsStep3}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step4Title}" IsVisible="{Binding IsStep4}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Body -->
+    <ScrollViewer Grid.Row="1" Padding="26,20" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="16">
+
+        <!-- ===================== Step 1 ===================== -->
+        <StackPanel Spacing="12" IsVisible="{Binding IsStep1}">
+          <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step1Description}" />
+          <StackPanel Spacing="6">
+            <TextBlock Classes="sectionLabel" Text="{loc:Localize Wizard.GameFolder}" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0"
+                       Margin="0,0,8,0"
+                       Text="{Binding GameFolder, Mode=TwoWay}"
+                       AutomationProperties.Name="{loc:Localize Wizard.GameFolder}" />
+              <Button Grid.Column="1"
+                      Content="{loc:Localize Common.Browse}"
+                      Command="{Binding BrowseFolderCommand}" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- ===================== Step 2 ===================== -->
+        <StackPanel Spacing="12" IsVisible="{Binding IsStep2}">
+          <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step2Description}" />
+
+          <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsScanning}">
+            <ProgressBar IsIndeterminate="True" Width="140" VerticalAlignment="Center" />
+            <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{loc:Localize Wizard.Scanning}" />
+          </StackPanel>
+
+          <TextBlock Classes="secondary wrap"
+                     Text="{loc:Localize Wizard.NoExecutablesFound}"
+                     IsVisible="{Binding ShowNoCandidates}" />
+
+          <ListBox Classes="plain"
+                   Height="330"
+                   ItemsSource="{Binding Candidates}"
+                   SelectedItem="{Binding SelectedCandidate, Mode=TwoWay}"
+                   IsVisible="{Binding HasCandidates}"
+                   AutomationProperties.Name="{loc:Localize Wizard.Step2Title}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="Auto,*,Auto" >
+                  <Border Grid.Column="0" Classes="chip" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Kind}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="1">
+                    <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" />
+                    <TextBlock Classes="tertiary" Text="{Binding RelativePath}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="2"
+                             Classes="tertiary"
+                             VerticalAlignment="Center"
+                             Text="{Binding UtilityHint}"
+                             IsVisible="{Binding LooksLikeUtility}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </StackPanel>
+
+        <!-- ===================== Step 3 ===================== -->
+        <StackPanel Spacing="12" IsVisible="{Binding IsStep3}">
+          <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step3Description}" />
+
+          <StackPanel Spacing="6">
+            <TextBlock Classes="sectionLabel" Text="{loc:Localize Wizard.SearchTerm}" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0"
+                       Margin="0,0,8,0"
+                       Text="{Binding SearchTerm, Mode=TwoWay}"
+                       AutomationProperties.Name="{loc:Localize Wizard.SearchTerm}" />
+              <Button Grid.Column="1"
+                      Content="{loc:Localize Common.Search}"
+                      Command="{Binding SearchCommand}" />
+            </Grid>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsSearching}">
+            <ProgressBar IsIndeterminate="True" Width="140" VerticalAlignment="Center" />
+            <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{loc:Localize Wizard.Searching}" />
+          </StackPanel>
+
+          <Border Classes="infoBanner" IsVisible="{Binding HasInfoMessage}">
+            <TextBlock Classes="wrap" Text="{Binding InfoMessage}" />
+          </Border>
+
+          <TextBlock Classes="sectionLabel" Text="{loc:Localize Wizard.SearchResults}" />
+
+          <ListBox Classes="plain"
+                   Height="230"
+                   ItemsSource="{Binding SearchResults}"
+                   SelectedItem="{Binding SelectedResult, Mode=TwoWay}"
+                   AutomationProperties.Name="{loc:Localize Wizard.SearchResults}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Spacing="1">
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                  <TextBlock Classes="tertiary"
+                             Text="{Binding Subtitle}"
+                             IsVisible="{Binding HasSubtitle}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <TextBlock Classes="tertiary wrap" Text="{loc:Localize Wizard.MetadataOptional}" />
+        </StackPanel>
+
+        <!-- ===================== Step 4 ===================== -->
+        <StackPanel Spacing="14" IsVisible="{Binding IsStep4}">
+          <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step4Description}" />
+
+          <StackPanel Spacing="6">
+            <TextBlock Classes="sectionLabel" Text="{loc:Localize Wizard.GameTitle}" />
+            <TextBox Text="{Binding GameTitle, Mode=TwoWay}"
+                     AutomationProperties.Name="{loc:Localize Wizard.GameTitle}" />
+          </StackPanel>
+
+          <Border Classes="card" Padding="18">
+            <StackPanel Spacing="9">
+              <Grid ColumnDefinitions="150,*" IsVisible="{Binding HasReviewYear}">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Year}" />
+                <TextBlock Grid.Column="1" Text="{Binding ReviewYear}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*" IsVisible="{Binding HasReviewPublisher}">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Publisher}" />
+                <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding ReviewPublisher}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*" IsVisible="{Binding HasReviewDeveloper}">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Developer}" />
+                <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding ReviewDeveloper}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*" IsVisible="{Binding HasReviewGenres}">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Details.Genre}" />
+                <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding ReviewGenres}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Edit.LaunchFile}" />
+                <TextBlock Grid.Column="1" Classes="mono wrap" Text="{Binding ReviewLaunchFile}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Edit.GameDirectory}" />
+                <TextBlock Grid.Column="1" Classes="mono wrap" Text="{Binding ReviewFolder}" />
+              </Grid>
+
+              <TextBlock Classes="tertiary"
+                         Text="{Binding ReviewMetadataState}"
+                         IsVisible="{Binding HasNoMetadata}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="infoBanner" IsVisible="{Binding HasInfoMessage}">
+            <TextBlock Classes="wrap" Text="{Binding InfoMessage}" />
+          </Border>
+        </StackPanel>
+
+        <!-- Validation -->
+        <Border Classes="errorBanner" IsVisible="{Binding HasValidationMessage}">
+          <TextBlock Classes="wrap" Text="{Binding ValidationMessage}" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer -->
+    <Border Grid.Row="2" Classes="panel" BorderThickness="0,1,0,0" Padding="26,14">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+        <Button Grid.Column="0"
+                Content="{loc:Localize Common.Cancel}"
+                Command="{Binding CancelCommand}" />
+
+        <Button Grid.Column="2"
+                Margin="0,0,8,0"
+                Content="{loc:Localize Common.Back}"
+                Command="{Binding BackCommand}"
+                IsEnabled="{Binding CanGoBack}" />
+
+        <Button Grid.Column="3"
+                Margin="0,0,8,0"
+                Content="{loc:Localize Wizard.SkipMetadata}"
+                Command="{Binding SkipMetadataCommand}"
+                IsVisible="{Binding ShowSkipMetadata}" />
+
+        <Button Grid.Column="4"
+                Classes="primary"
+                Content="{loc:Localize Common.Next}"
+                Command="{Binding NextCommand}"
+                IsVisible="{Binding ShowNext}" />
+
+        <Button Grid.Column="4"
+                Classes="primary"
+                Content="{loc:Localize Wizard.AddGame}"
+                Command="{Binding FinishCommand}"
+                IsEnabled="{Binding !IsBusy}"
+                IsVisible="{Binding IsStep4}" />
+      </Grid>
+    </Border>
+  </Grid>
+</v:DialogWindow>

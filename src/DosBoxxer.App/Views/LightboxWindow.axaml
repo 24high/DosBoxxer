@@ -1,0 +1,55 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                x:Class="DosBoxxer.App.Views.LightboxWindow"
+                Title="{Binding Caption}"
+                Width="1000" Height="720"
+                MinWidth="480" MinHeight="360"
+                Background="#141518">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="18,14">
+      <TextBlock Grid.Column="0"
+                 Foreground="#E8EAEE"
+                 VerticalAlignment="Center"
+                 Text="{Binding Caption}" />
+      <Button Grid.Column="1"
+              Classes="icon"
+              Command="{Binding CloseCommand}"
+              AutomationProperties.Name="{loc:Localize Common.Close}">
+        <PathIcon Data="{StaticResource IconClose}" Foreground="#E8EAEE" />
+      </Button>
+    </Grid>
+
+    <Panel Grid.Row="1" Margin="18,0">
+      <Image Source="{Binding Image}" Stretch="Uniform" />
+      <ProgressBar IsIndeterminate="True"
+                   Width="180"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding IsLoading}" />
+    </Panel>
+
+    <StackPanel Grid.Row="2"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Spacing="12"
+                Margin="0,16,0,20"
+                IsVisible="{Binding CanNavigate}">
+      <Button Classes="icon"
+              Command="{Binding PreviousCommand}"
+              AutomationProperties.Name="{loc:Localize Lightbox.Previous}"
+              ToolTip.Tip="{loc:Localize Lightbox.Previous}">
+        <PathIcon Data="{StaticResource IconChevronLeft}" Foreground="#E8EAEE" Width="20" Height="20" />
+      </Button>
+      <Button Classes="icon"
+              Command="{Binding NextCommand}"
+              AutomationProperties.Name="{loc:Localize Lightbox.Next}"
+              ToolTip.Tip="{loc:Localize Lightbox.Next}">
+        <PathIcon Data="{StaticResource IconChevronRight}" Foreground="#E8EAEE" Width="20" Height="20" />
+      </Button>
+    </StackPanel>
+  </Grid>
+</v:DialogWindow>

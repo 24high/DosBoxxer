@@ -1,0 +1,27 @@
+{
+  "game_id": 1069,
+  "platform_id": 2,
+  "platform_name": "DOS",
+  "first_release_date": "1993-12-10",
+  "attributes": [
+    { "attribute_category_id": 6, "attribute_category_name": "Input Devices Supported", "attribute_id": 23, "attribute_name": "Keyboard" },
+    { "attribute_category_id": 40, "attribute_category_name": "Number of Players: Offline", "attribute_id": 489, "attribute_name": "1-4 Players" }
+  ],
+  "releases": [
+    {
+      "release_date": "1993-12-10",
+      "countries": [ "United States" ],
+      "companies": [
+        { "company_id": 45, "company_name": "id Software, Inc.", "role": "Developed by" },
+        { "company_id": 12, "company_name": "id Software, Inc.", "role": "Published by" }
+      ]
+    },
+    {
+      "release_date": "1994",
+      "countries": [ "Worldwide" ],
+      "companies": [
+        { "company_id": 99, "company_name": "GT Interactive Software Corp.", "role": "Published by" }
+      ]
+    }
+  ]
+}

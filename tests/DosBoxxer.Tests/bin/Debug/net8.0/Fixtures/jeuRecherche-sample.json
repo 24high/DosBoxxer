@@ -1,0 +1,32 @@
+{
+  "header": {
+    "APIversion": "2",
+    "commandRequested": "jeuRecherche.php",
+    "success": "true",
+    "error": ""
+  },
+  "response": {
+    "jeux": [
+      {
+        "id": "3474",
+        "noms": [{ "region": "wor", "text": "Doom" }],
+        "systeme": { "id": "135", "text": "PC Dos" },
+        "editeur": { "id": "12", "text": "GT Interactive" },
+        "dates": [{ "region": "wor", "text": "1993-12-10" }]
+      },
+      {
+        "id": "3475",
+        "noms": { "region": "wor", "text": "The Ultimate Doom" },
+        "systeme": { "id": "135", "text": "PC Dos" },
+        "dates": [{ "region": "wor", "text": "1995" }]
+      },
+      {
+        "id": 3476,
+        "noms": [{ "region": "wor", "text": "Doom II" }],
+        "systeme": { "id": "135", "text": "PC Dos" },
+        "dates": "",
+        "genres": []
+      }
+    ]
+  }
+}

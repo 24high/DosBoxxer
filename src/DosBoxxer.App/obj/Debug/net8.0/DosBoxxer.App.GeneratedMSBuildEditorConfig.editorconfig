@@ -1,0 +1,65 @@
+is_global = true
+build_property.AvaloniaNameGeneratorIsEnabled = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
+build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.AvaloniaUseCompiledBindingsByDefault = false
+build_property.AvaloniaMainPackageVersion = 11.3.20
+build_property.AvaloniaPreviewerNetCoreToolPath = /home/dh/.nuget/packages/avalonia/11.3.20/buildTransitive//../tools/netstandard2.0/designer/Avalonia.Designer.HostApp.dll
+build_property.AvaloniaResourcePaths = /home/dh/DosBoxxer/src/DosBoxxer.App/App.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Controls.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Icons.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Theme.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/AddGameWizardWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ConfirmDialogWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/EditGameWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/LightboxWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MainWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MetadataSearchWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/RefreshMetadataWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SettingsWindow.axaml
+build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
+build_property._MvvmToolkitIsUsingWindowsRuntimePack = false
+build_property.CsWinRTComponent = 
+build_property.CsWinRTAotOptimizerEnabled = 
+build_property.CsWinRTAotWarningLevel = 
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = DosBoxxer.App
+build_property.ProjectDir = /home/dh/DosBoxxer/src/DosBoxxer.App/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Controls.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Icons.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Theme.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/AddGameWizardWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ConfirmDialogWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/EditGameWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/LightboxWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MetadataSearchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/RefreshMetadataWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SettingsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

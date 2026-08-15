@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>DosBoxxer.Core</RootNamespace>
+    <AssemblyName>DosBoxxer.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      WithCulture=false is essential: file names such as Strings.de.json look like satellite
+      culture resources to MSBuild, which would move them into per-culture satellite assemblies
+      instead of embedding them in this assembly. LogicalName pins the exact resource name that
+      LocalizationService looks up.
+    -->
+    <EmbeddedResource Include="Localization/Strings/*.json">
+      <WithCulture>false</WithCulture>
+      <LogicalName>DosBoxxer.Core.Localization.Strings.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DosBoxxer.Tests" />
+  </ItemGroup>
+
+</Project>

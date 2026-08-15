@@ -1,0 +1,86 @@
+{
+  "header": {
+    "APIversion": "2",
+    "dateTime": "2024-01-01 12:00:00",
+    "commandRequested": "jeuInfos.php",
+    "success": "true",
+    "error": ""
+  },
+  "response": {
+    "jeu": {
+      "id": "3474",
+      "noms": [
+        { "region": "wor", "text": "Doom" },
+        { "region": "us", "text": "DOOM" },
+        { "region": "jp", "text": "ドゥーム" }
+      ],
+      "systeme": { "id": "135", "text": "PC Dos" },
+      "editeur": { "id": "12", "text": "GT Interactive" },
+      "developpeur": { "id": "45", "text": "id Software" },
+      "joueurs": { "text": "1-4" },
+      "dates": [
+        { "region": "wor", "text": "1993-12-10" },
+        { "region": "us", "text": "1993" }
+      ],
+      "genres": [
+        {
+          "id": "10",
+          "noms": [
+            { "langue": "en", "text": "Shoot'em Up" },
+            { "langue": "fr", "text": "Tir" },
+            { "langue": "de", "text": "Shooter" }
+          ]
+        },
+        {
+          "id": "1",
+          "noms": [
+            { "langue": "en", "text": "Action" },
+            { "langue": "fr", "text": "Action" }
+          ]
+        }
+      ],
+      "synopsis": [
+        { "langue": "en", "text": "You are a space marine fighting demons on Phobos." },
+        { "langue": "fr", "text": "Vous êtes un marine spatial qui combat des démons." },
+        { "langue": "de", "text": "Du bist ein Space Marine und kämpfst gegen Dämonen." }
+      ],
+      "medias": [
+        {
+          "type": "box-2D",
+          "parent": "jeu",
+          "url": "https://api.screenscraper.fr/api2/mediaJeu.php?jeuid=3474&media=box-2D(wor)",
+          "region": "wor",
+          "format": "png"
+        },
+        {
+          "type": "box-2D",
+          "parent": "jeu",
+          "url": "https://api.screenscraper.fr/api2/mediaJeu.php?jeuid=3474&media=box-2D(us)",
+          "region": "us",
+          "format": "png"
+        },
+        {
+          "type": "ss",
+          "parent": "jeu",
+          "url": "https://api.screenscraper.fr/api2/mediaJeu.php?jeuid=3474&media=ss",
+          "region": "wor",
+          "format": "png"
+        },
+        {
+          "type": "sstitle",
+          "parent": "jeu",
+          "url": "https://api.screenscraper.fr/api2/mediaJeu.php?jeuid=3474&media=sstitle",
+          "region": "wor",
+          "format": "png"
+        },
+        {
+          "type": "wheel",
+          "parent": "jeu",
+          "url": "https://evil.example.com/steal?x=1",
+          "region": "wor",
+          "format": "png"
+        }
+      ]
+    }
+  }
+}

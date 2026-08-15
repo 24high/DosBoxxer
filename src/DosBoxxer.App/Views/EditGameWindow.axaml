@@ -1,0 +1,336 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                xmlns:conv="using:DosBoxxer.App.Converters"
+                x:Class="DosBoxxer.App.Views.EditGameWindow"
+                Title="{loc:Localize Edit.Title}"
+                Width="820" Height="700"
+                MinWidth="680" MinHeight="560"
+                Background="{DynamicResource AppBackgroundBrush}">
+
+  <Window.Resources>
+    <conv:NullableBoolToIndexConverter x:Key="NullableBool" />
+  </Window.Resources>
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <Border Grid.Row="0" Classes="panel" BorderThickness="0,0,0,1" Padding="26,18">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="h1" Text="{loc:Localize Edit.Title}" />
+        <TextBlock Classes="tertiary wrap"
+                   Text="{Binding ProtectedFieldsText}"
+                   IsVisible="{Binding HasProtectedFields}" />
+      </StackPanel>
+    </Border>
+
+    <TabControl Grid.Row="1" Margin="16,10,16,0">
+
+      <!-- ===================== General ===================== -->
+      <TabItem Header="{loc:Localize Edit.TabGeneral}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.GameTitle}" />
+              <TextBox Text="{Binding Title, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.SortTitle}" />
+              <TextBox Text="{Binding SortTitle, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.GameDirectory}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding GameDirectory, Mode=TwoWay}" />
+                <Button Grid.Column="1"
+                        Content="{loc:Localize Common.Browse}"
+                        Command="{Binding BrowseGameDirectoryCommand}" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.LaunchFile}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding LaunchFile, Mode=TwoWay}" />
+                <Button Grid.Column="1"
+                        Content="{loc:Localize Common.Browse}"
+                        Command="{Binding BrowseLaunchFileCommand}" />
+              </Grid>
+            </StackPanel>
+
+            <CheckBox Content="{loc:Localize Edit.Favorite}" IsChecked="{Binding IsFavorite, Mode=TwoWay}" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ===================== Metadata ===================== -->
+      <TabItem Header="{loc:Localize Edit.TabMetadata}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Publisher}" />
+                <TextBox Text="{Binding Publisher, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Developer}" />
+                <TextBox Text="{Binding Developer, Mode=TwoWay}" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.ReleaseYear}" />
+                <TextBox Text="{Binding ReleaseYear, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Players}" />
+                <TextBox Text="{Binding Players, Mode=TwoWay}" />
+              </StackPanel>
+            </Grid>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Description}" />
+              <TextBox Text="{Binding Description, Mode=TwoWay}"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       Height="150" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Genres}" />
+              <Border Classes="card" Padding="14">
+                <ItemsControl ItemsSource="{Binding Genres}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <CheckBox Width="164"
+                                Content="{Binding DisplayName}"
+                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
+            </StackPanel>
+
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Edit.ManualFieldsHint}" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ===================== Media ===================== -->
+      <TabItem Header="{loc:Localize Edit.TabMedia}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="16">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Cover}" />
+              <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0"
+                        Width="180" Height="240"
+                        CornerRadius="{DynamicResource RadiusMedium}"
+                        ClipToBounds="True"
+                        Background="{DynamicResource PlaceholderBrush}">
+                  <Image Source="{Binding CoverPreview}"
+                         Stretch="UniformToFill"
+                         IsVisible="{Binding HasCoverPreview}" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="16,0,0,0" Spacing="8" VerticalAlignment="Top">
+                  <Button Content="{loc:Localize Edit.ChooseCover}" Command="{Binding ChooseCoverCommand}" />
+                  <Button Content="{loc:Localize Edit.ClearCover}" Command="{Binding ClearCoverCommand}" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Screenshots}" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{loc:Localize Edit.AddScreenshot}" Command="{Binding AddScreenshotCommand}" />
+                <Button Content="{loc:Localize Edit.RemoveScreenshot}" Command="{Binding RemoveScreenshotCommand}" />
+              </StackPanel>
+
+              <ListBox Classes="plain"
+                       Height="220"
+                       ItemsSource="{Binding Screenshots}"
+                       SelectedItem="{Binding SelectedScreenshot, Mode=TwoWay}">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Border Width="150" Height="112"
+                            CornerRadius="{DynamicResource RadiusSmall}"
+                            ClipToBounds="True"
+                            Background="{DynamicResource SurfaceSunkenBrush}">
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ===================== DOSBox ===================== -->
+      <TabItem Header="{loc:Localize Edit.TabDosBox}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="h2" Text="{loc:Localize DosBox.PerGameOverrides}" />
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize DosBox.OverrideHint}" />
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Cycles}" />
+                <TextBox Text="{Binding Cycles, Mode=TwoWay}" Watermark="auto / max / fixed 3000" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Core}" />
+                <TextBox Text="{Binding Core, Mode=TwoWay}" Watermark="auto / normal / dynamic" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Machine}" />
+                <TextBox Text="{Binding Machine, Mode=TwoWay}" Watermark="svga_s3 / vgaonly / ega / cga" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.MemSize}" />
+                <TextBox Text="{Binding MemSize, Mode=TwoWay}" Watermark="16" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Scaler}" />
+                <TextBox Text="{Binding Scaler, Mode=TwoWay}" Watermark="none / normal2x / hq2x" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Output}" />
+                <TextBox Text="{Binding Output, Mode=TwoWay}" Watermark="surface / opengl / openglnb" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.MixerRate}" />
+                <TextBox Text="{Binding MixerRate, Mode=TwoWay}" Watermark="44100" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.SoundBlaster}" />
+                <TextBox Text="{Binding SoundBlasterType, Mode=TwoWay}" Watermark="sb16 / sbpro2 / none" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,14,*,14,*">
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Aspect}" />
+                <ComboBox HorizontalAlignment="Stretch"
+                          SelectedIndex="{Binding Aspect, Mode=TwoWay, Converter={StaticResource NullableBool}}">
+                  <ComboBoxItem Content="{loc:Localize DosBox.Inherit}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.Yes}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.No}" />
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.Fullscreen}" />
+                <ComboBox HorizontalAlignment="Stretch"
+                          SelectedIndex="{Binding Fullscreen, Mode=TwoWay, Converter={StaticResource NullableBool}}">
+                  <ComboBoxItem Content="{loc:Localize DosBox.Inherit}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.Yes}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.No}" />
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="4" Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.PcSpeaker}" />
+                <ComboBox HorizontalAlignment="Stretch"
+                          SelectedIndex="{Binding PcSpeaker, Mode=TwoWay, Converter={StaticResource NullableBool}}">
+                  <ComboBoxItem Content="{loc:Localize DosBox.Inherit}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.Yes}" />
+                  <ComboBoxItem Content="{loc:Localize DosBox.No}" />
+                </ComboBox>
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ===================== Advanced ===================== -->
+      <TabItem Header="{loc:Localize Edit.TabAdvanced}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.AdditionalConfigLines}" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize DosBox.AdditionalConfigHint}" />
+              <TextBox Text="{Binding AdditionalConfigLines, Mode=TwoWay}"
+                       Classes="mono"
+                       AcceptsReturn="True"
+                       TextWrapping="NoWrap"
+                       Height="120" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize DosBox.PreLaunchCommands}" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize DosBox.PreLaunchHint}" />
+              <TextBox Text="{Binding PreLaunchCommands, Mode=TwoWay}"
+                       Classes="mono"
+                       AcceptsReturn="True"
+                       TextWrapping="NoWrap"
+                       Height="90" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.ScreenScraperId}" />
+              <TextBox Text="{Binding ScreenScraperId, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Edit.Platform}" />
+              <TextBox Text="{Binding Platform, Mode=TwoWay}" />
+            </StackPanel>
+
+            <Button Content="{loc:Localize DosBox.PreviewConfig}"
+                    HorizontalAlignment="Left"
+                    Command="{Binding PreviewConfigCommand}" />
+
+            <Border Classes="card" Padding="12" IsVisible="{Binding HasConfigPreview}">
+              <ScrollViewer Height="200" HorizontalScrollBarVisibility="Auto">
+                <TextBlock Classes="mono" Text="{Binding ConfigPreview}" TextWrapping="NoWrap" />
+              </ScrollViewer>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="2" Classes="panel" BorderThickness="0,1,0,0" Padding="26,14">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <Border Grid.Column="0"
+                Classes="errorBanner"
+                Margin="0,0,16,0"
+                IsVisible="{Binding HasValidationMessage}">
+          <TextBlock Classes="wrap" Text="{Binding ValidationMessage}" />
+        </Border>
+
+        <Button Grid.Column="1"
+                Margin="0,0,8,0"
+                Content="{loc:Localize Common.Cancel}"
+                Command="{Binding CancelCommand}"
+                IsCancel="True" />
+        <Button Grid.Column="2"
+                Classes="primary"
+                Content="{loc:Localize Common.Save}"
+                Command="{Binding SaveCommand}"
+                IsDefault="True" />
+      </Grid>
+    </Border>
+  </Grid>
+</v:DialogWindow>

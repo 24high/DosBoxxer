@@ -1,0 +1,59 @@
+{
+  "games": [
+    {
+      "game_id": 1069,
+      "title": "Doom",
+      "description": "<p>You are a space marine, one of Earth's toughest, hardened in combat.</p><p>Doom is a first-person shooter.</p>",
+      "moby_url": "http://www.mobygames.com/game/doom",
+      "official_url": null,
+      "genres": [
+        { "genre_category": "Basic Genres", "genre_category_id": 1, "genre_id": 8, "genre_name": "Action" },
+        { "genre_category": "Gameplay", "genre_category_id": 4, "genre_id": 40, "genre_name": "Shooter" },
+        { "genre_category": "Perspective", "genre_category_id": 2, "genre_id": 7, "genre_name": "1st-person" },
+        { "genre_category": "Setting", "genre_category_id": 10, "genre_id": 8, "genre_name": "Sci-Fi / Futuristic" }
+      ],
+      "platforms": [
+        { "first_release_date": "1993-12-10", "platform_id": 2, "platform_name": "DOS" },
+        { "first_release_date": "1995", "platform_id": 3, "platform_name": "Windows" }
+      ],
+      "sample_cover": {
+        "height": 900,
+        "width": 700,
+        "platforms": [ "DOS" ],
+        "image": "https://cdn.mobygames.com/covers/l/1069-doom-dos-front-cover.jpg",
+        "thumbnail_image": "https://cdn.mobygames.com/covers/s/1069-doom-dos-front-cover.jpg"
+      },
+      "sample_screenshots": [
+        {
+          "caption": "Title screen",
+          "height": 200, "width": 320,
+          "image": "https://cdn.mobygames.com/screenshots/l/1-doom-dos-title.png",
+          "thumbnail_image": "https://cdn.mobygames.com/screenshots/s/1-doom-dos-title.png"
+        },
+        {
+          "caption": "E1M1",
+          "height": 200, "width": 320,
+          "image": "https://cdn.mobygames.com/screenshots/l/2-doom-dos-e1m1.png",
+          "thumbnail_image": "https://cdn.mobygames.com/screenshots/s/2-doom-dos-e1m1.png"
+        },
+        {
+          "caption": "Foreign host (must be rejected)",
+          "height": 200, "width": 320,
+          "image": "https://evil.example.com/steal.png",
+          "thumbnail_image": "https://evil.example.com/steal-s.png"
+        }
+      ]
+    },
+    {
+      "game_id": 2072,
+      "title": "The Ultimate Doom",
+      "description": null,
+      "genres": [],
+      "platforms": [
+        { "first_release_date": "1995", "platform_id": 2, "platform_name": "DOS" }
+      ],
+      "sample_cover": null,
+      "sample_screenshots": []
+    }
+  ]
+}

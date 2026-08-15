@@ -1,0 +1,44 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                x:Class="DosBoxxer.App.Views.ConfirmDialogWindow"
+                Title="{Binding DialogTitle}"
+                Width="480"
+                SizeToContent="Height"
+                CanResize="False"
+                Background="{DynamicResource SurfaceBrush}">
+
+  <StackPanel Margin="26" Spacing="16">
+
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <PathIcon Data="{StaticResource IconWarning}"
+                Width="20" Height="20"
+                VerticalAlignment="Top"
+                Margin="0,2,0,0"
+                Foreground="{DynamicResource DangerBrush}"
+                IsVisible="{Binding IsError}" />
+      <TextBlock Classes="h1 wrap" Text="{Binding DialogTitle}" />
+    </StackPanel>
+
+    <TextBlock Classes="wrap" Text="{Binding Message}" />
+
+    <TextBlock Classes="tertiary wrap"
+               Text="{Binding Hint}"
+               IsVisible="{Binding HasHint}" />
+
+    <CheckBox Content="{Binding ExtraOptionText}"
+              IsChecked="{Binding ExtraOptionValue, Mode=TwoWay}"
+              IsVisible="{Binding HasExtraOption}" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="{Binding CancelText}"
+              Command="{Binding CancelCommand}"
+              IsVisible="{Binding ShowCancel}"
+              IsCancel="True" />
+      <Button Classes="primary"
+              Content="{Binding ConfirmText}"
+              Command="{Binding ConfirmCommand}"
+              IsDefault="True" />
+    </StackPanel>
+  </StackPanel>
+</v:DialogWindow>
