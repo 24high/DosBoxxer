@@ -140,3 +140,5 @@
 /home/dh/DosBoxxer/tests/DosBoxxer.Tests/bin/Debug/net8.0/Fixtures/error-response.txt
 /home/dh/DosBoxxer/tests/DosBoxxer.Tests/bin/Debug/net8.0/Fixtures/moby-games-search.json
 /home/dh/DosBoxxer/tests/DosBoxxer.Tests/bin/Debug/net8.0/Fixtures/moby-platform-detail.json
+/home/dh/DosBoxxer/tests/DosBoxxer.Tests/bin/Debug/net8.0/Fixtures/igdb-game.json
+/home/dh/DosBoxxer/tests/DosBoxxer.Tests/bin/Debug/net8.0/Fixtures/rawg-game-detail.json

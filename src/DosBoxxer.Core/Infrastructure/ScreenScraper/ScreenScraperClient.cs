@@ -114,6 +114,8 @@ public sealed class ScreenScraperClient : IMediaHttpClient, IDisposable
     /// Downloads a media file. The URL must have been returned by the API and is validated
     /// against the ScreenScraper host before any request is made.
     /// </summary>
+    public bool AcceptsUrl(string url) => TryValidateMediaUrl(url, out _);
+
     public async Task<Stream?> DownloadMediaAsync(string url, CancellationToken cancellationToken)
     {
         if (!TryValidateMediaUrl(url, out var uri))

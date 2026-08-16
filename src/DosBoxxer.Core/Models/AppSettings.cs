@@ -33,9 +33,19 @@ public sealed class AppSettings
     public bool CloseDosBoxAfterExit { get; set; }
 
     // ---- Metadata provider ------------------------------------------------------
+    /// <summary>
+    /// Key of the active metadata provider: <c>mobygames</c>, <c>igdb</c> or <c>rawg</c>.
+    /// The <c>ActiveMetadataProvider</c> facade forwards to the matching one.
+    /// </summary>
+    public string MetadataProviderKey { get; set; } = "mobygames";
+
     public ScreenScraperSettings ScreenScraper { get; set; } = new();
 
     public MobyGamesSettings MobyGames { get; set; } = new();
+
+    public IgdbSettings Igdb { get; set; } = new();
+
+    public RawgSettings Rawg { get; set; } = new();
 
     // ---- Localisation -----------------------------------------------------------
     /// <summary>BCP-47 language tag, e.g. <c>en</c>, <c>de</c>, <c>zh-Hans</c>.</summary>
@@ -67,8 +77,11 @@ public sealed class AppSettings
         BaseDosBoxConfigPath = BaseDosBoxConfigPath,
         DosBoxAdditionalArguments = DosBoxAdditionalArguments,
         CloseDosBoxAfterExit = CloseDosBoxAfterExit,
+        MetadataProviderKey = MetadataProviderKey,
         ScreenScraper = ScreenScraper.Clone(),
         MobyGames = MobyGames.Clone(),
+        Igdb = Igdb.Clone(),
+        Rawg = Rawg.Clone(),
         Language = Language,
         CoverSize = CoverSize,
         DoubleClickAction = DoubleClickAction,
@@ -175,6 +188,67 @@ public sealed class MobyGamesSettings
     public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
 
     public MobyGamesSettings Clone() => new()
+    {
+        PlatformId = PlatformId,
+        MaxScreenshots = MaxScreenshots,
+        ApiKey = ApiKey,
+    };
+}
+
+/// <summary>
+/// IGDB connection settings. IGDB authenticates with a Twitch application: a public client id
+/// and a client secret exchanged for a short-lived bearer token. The secret is held in memory
+/// after being read from the secret store and is never serialised into <c>settings.json</c>.
+/// </summary>
+public sealed class IgdbSettings
+{
+    /// <summary>Twitch application client id (public).</summary>
+    public string? ClientId { get; set; }
+
+    /// <summary>IGDB platform id to restrict searches to. 13 is "DOS".</summary>
+    public int PlatformId { get; set; } = 13;
+
+    public int MaxScreenshots { get; set; } = 6;
+
+    // -- transient, never serialised ------------------------------------------------
+    [JsonIgnore]
+    public string? ClientSecret { get; set; }
+
+    [JsonIgnore]
+    public bool HasCredentials =>
+        !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
+
+    public IgdbSettings Clone() => new()
+    {
+        ClientId = ClientId,
+        PlatformId = PlatformId,
+        MaxScreenshots = MaxScreenshots,
+        ClientSecret = ClientSecret,
+    };
+}
+
+/// <summary>
+/// RAWG connection settings. RAWG authenticates with a single API key issued instantly on
+/// signup. The key is held in memory after being read from the secret store.
+/// </summary>
+public sealed class RawgSettings
+{
+    /// <summary>
+    /// Optional RAWG platform id to filter searches. RAWG has no dedicated DOS platform, so this
+    /// is empty by default and the search runs across all platforms.
+    /// </summary>
+    public int? PlatformId { get; set; }
+
+    public int MaxScreenshots { get; set; } = 6;
+
+    // -- transient, never serialised ------------------------------------------------
+    [JsonIgnore]
+    public string? ApiKey { get; set; }
+
+    [JsonIgnore]
+    public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
+
+    public RawgSettings Clone() => new()
     {
         PlatformId = PlatformId,
         MaxScreenshots = MaxScreenshots,

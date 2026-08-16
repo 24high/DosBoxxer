@@ -45,6 +45,10 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private bool _closeDosBoxAfterExit;
 
     [ObservableProperty]
+    private MetadataProviderOptionViewModel? _selectedProvider;
+
+    // -- MobyGames --
+    [ObservableProperty]
     private string _mobyGamesApiKey = string.Empty;
 
     [ObservableProperty]
@@ -53,6 +57,29 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>Bound to a NumericUpDown, whose Value is a decimal.</summary>
     [ObservableProperty]
     private decimal _mobyGamesMaxScreenshots = 6;
+
+    // -- IGDB --
+    [ObservableProperty]
+    private string _igdbClientId = string.Empty;
+
+    [ObservableProperty]
+    private string _igdbClientSecret = string.Empty;
+
+    [ObservableProperty]
+    private string _igdbPlatformId = string.Empty;
+
+    [ObservableProperty]
+    private decimal _igdbMaxScreenshots = 6;
+
+    // -- RAWG --
+    [ObservableProperty]
+    private string _rawgApiKey = string.Empty;
+
+    [ObservableProperty]
+    private string _rawgPlatformId = string.Empty;
+
+    [ObservableProperty]
+    private decimal _rawgMaxScreenshots = 6;
 
     [ObservableProperty]
     private LanguageOptionViewModel? _selectedLanguage;
@@ -128,9 +155,23 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _dosBoxAdditionalArguments = current.DosBoxAdditionalArguments ?? string.Empty;
         _closeDosBoxAfterExit = current.CloseDosBoxAfterExit;
 
+        Providers.Add(new MetadataProviderOptionViewModel("mobygames", "MobyGames"));
+        Providers.Add(new MetadataProviderOptionViewModel("igdb", "IGDB"));
+        Providers.Add(new MetadataProviderOptionViewModel("rawg", "RAWG"));
+        _selectedProvider = Providers.FirstOrDefault(p => p.Key == current.MetadataProviderKey) ?? Providers[0];
+
         _mobyGamesApiKey = current.MobyGames.ApiKey ?? string.Empty;
         _mobyGamesPlatformId = current.MobyGames.PlatformId.ToString(CultureInfo.InvariantCulture);
         _mobyGamesMaxScreenshots = current.MobyGames.MaxScreenshots;
+
+        _igdbClientId = current.Igdb.ClientId ?? string.Empty;
+        _igdbClientSecret = current.Igdb.ClientSecret ?? string.Empty;
+        _igdbPlatformId = current.Igdb.PlatformId.ToString(CultureInfo.InvariantCulture);
+        _igdbMaxScreenshots = current.Igdb.MaxScreenshots;
+
+        _rawgApiKey = current.Rawg.ApiKey ?? string.Empty;
+        _rawgPlatformId = current.Rawg.PlatformId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+        _rawgMaxScreenshots = current.Rawg.MaxScreenshots;
 
         _selectedLanguage = Languages.FirstOrDefault(l => l.Code == current.Language) ?? Languages[0];
         _selectedCoverSize = CoverSizes.FirstOrDefault(c => c.Size == current.CoverSize) ?? CoverSizes[1];
@@ -141,9 +182,18 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _rememberWindowState = current.RememberWindowState;
     }
 
+    public ObservableCollection<MetadataProviderOptionViewModel> Providers { get; } = new();
+
     public ObservableCollection<LanguageOptionViewModel> Languages { get; } = new();
 
     public ObservableCollection<CoverSizeOptionViewModel> CoverSizes { get; } = new();
+
+    /// <summary>Section visibility follows the selected provider so the dialog stays focused.</summary>
+    public bool IsMobyGamesSelected => SelectedProvider?.Key == "mobygames";
+
+    public bool IsIgdbSelected => SelectedProvider?.Key == "igdb";
+
+    public bool IsRawgSelected => SelectedProvider?.Key == "rawg";
 
     public string DataFolder => _paths.DataRoot;
 
@@ -185,7 +235,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private async Task TestConnectionAsync()
     {
         // Apply the API key the user just typed so the test uses it.
-        ApplyMobyGamesToSettings();
+        ApplyProvidersToSettings();
 
         IsTesting = true;
         StatusMessage = L("Settings.Testing");
@@ -278,7 +328,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         settings.DosBoxAdditionalArguments = NullIfEmpty(DosBoxAdditionalArguments);
         settings.CloseDosBoxAfterExit = CloseDosBoxAfterExit;
 
-        ApplyMobyGamesToSettings();
+        ApplyProvidersToSettings();
 
         settings.Language = SelectedLanguage?.Code ?? _originalLanguage;
         settings.CoverSize = SelectedCoverSize?.Size ?? CoverSize.Medium;
@@ -312,17 +362,43 @@ public sealed partial class SettingsViewModel : ViewModelBase
         CloseRequested?.Invoke(this, false);
     }
 
-    private void ApplyMobyGamesToSettings()
+    private void ApplyProvidersToSettings()
     {
-        var moby = _settings.Current.MobyGames;
+        var current = _settings.Current;
+        current.MetadataProviderKey = SelectedProvider?.Key ?? "mobygames";
 
+        // -- MobyGames --
+        var moby = current.MobyGames;
         moby.ApiKey = NullIfEmpty(MobyGamesApiKey);
         moby.MaxScreenshots = Math.Clamp((int)MobyGamesMaxScreenshots, 0, 20);
+        moby.PlatformId = ParsePlatformId(MobyGamesPlatformId, 2);
 
-        // Default to the DOS platform (2) when the field is empty or not a number.
-        moby.PlatformId = int.TryParse(MobyGamesPlatformId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var platformId) && platformId > 0
-            ? platformId
-            : 2;
+        // -- IGDB --
+        var igdb = current.Igdb;
+        igdb.ClientId = NullIfEmpty(IgdbClientId);
+        igdb.ClientSecret = NullIfEmpty(IgdbClientSecret);
+        igdb.MaxScreenshots = Math.Clamp((int)IgdbMaxScreenshots, 0, 20);
+        igdb.PlatformId = ParsePlatformId(IgdbPlatformId, 13);
+
+        // -- RAWG --
+        var rawg = current.Rawg;
+        rawg.ApiKey = NullIfEmpty(RawgApiKey);
+        rawg.MaxScreenshots = Math.Clamp((int)RawgMaxScreenshots, 0, 20);
+        rawg.PlatformId = int.TryParse(RawgPlatformId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rawgPlatform) && rawgPlatform > 0
+            ? rawgPlatform
+            : null;
+    }
+
+    private static int ParsePlatformId(string value, int fallback) =>
+        int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id) && id > 0 ? id : fallback;
+
+    partial void OnSelectedProviderChanged(MetadataProviderOptionViewModel? value)
+    {
+        OnPropertyChanged(nameof(IsMobyGamesSelected));
+        OnPropertyChanged(nameof(IsIgdbSelected));
+        OnPropertyChanged(nameof(IsRawgSelected));
+        StatusMessage = null;
+        ValidationMessage = null;
     }
 
     private async Task UpdateCacheSizeAsync()

@@ -311,5 +311,17 @@
   "Settings.MobyPlatformIdHint": "2 — это «DOS» в списке платформ MobyGames. Меняйте только для другой платформы.",
   "Settings.MobyMaxScreenshots": "Максимум скриншотов на игру",
   "Error.InvalidApiKey": "API-ключ MobyGames отклонён. Проверьте ключ в настройках.",
-  "Error.ProviderUnreachable": "Поставщик метаданных сейчас недоступен."
+  "Error.ProviderUnreachable": "Поставщик метаданных сейчас недоступен.",
+  "Settings.SectionMetadata": "Поставщик метаданных",
+  "Settings.MetadataProvider": "Поставщик",
+  "Settings.MetadataProviderHint": "Выберите онлайн-базу, которая обогащает ваши игры. Введите ниже учётные данные выбранного поставщика.",
+  "Settings.IgdbHint": "IGDB бесплатен и доступен сразу: создайте приложение на dev.twitch.tv, чтобы получить Client ID и Client Secret. Хорошее покрытие DOS; API допускает около 4 запросов в секунду.",
+  "Settings.IgdbClientId": "Client ID",
+  "Settings.IgdbClientSecret": "Client Secret",
+  "Settings.IgdbPlatformId": "ID платформы",
+  "Settings.IgdbPlatformIdHint": "13 — это «DOS» в списке платформ IGDB. Меняйте только для другой платформы.",
+  "Settings.RawgHint": "RAWG выдаёт бесплатный API-ключ сразу после регистрации на rawg.io. Учтите: покрытие игр эпохи DOS у RAWG слабее, а обложки часто современные.",
+  "Settings.RawgApiKey": "API-ключ",
+  "Settings.RawgPlatformId": "ID платформы (необязательно)",
+  "Settings.RawgPlatformIdHint": "У RAWG нет отдельной платформы DOS — оставьте пустым для поиска по всем платформам."
 }

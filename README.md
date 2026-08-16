@@ -1,7 +1,7 @@
 # DosBoxxer
 
 A modern, cross-platform game launcher for DOSBox. Manage your DOS game library, enrich it with
-metadata and cover art from [ScreenScraper](https://screenscraper.fr/), and start any game with a
+metadata and cover art from online databases (MobyGames, IGDB or RAWG), and start any game with a
 single click — on **Windows, Linux and macOS** from one code base.
 
 Built with .NET 8 and [Avalonia UI](https://avaloniaui.net/), MVVM throughout, SQLite for the
@@ -20,7 +20,7 @@ library, and a light Fluent/Metro inspired theme.
   - [Linux](#linux)
   - [macOS](#macos)
 - [Configuring DOSBox](#configuring-dosbox)
-- [Configuring ScreenScraper](#configuring-screenscraper)
+- [Configuring the metadata provider](#configuring-the-metadata-provider)
 - [How a game is started](#how-a-game-is-started)
 - [Data directories](#data-directories)
 - [Database](#database)
@@ -94,7 +94,7 @@ The main window is laid out in three columns:
 
 **Metadata**
 
-- ScreenScraper integration behind a provider-agnostic `IGameMetadataProvider` abstraction
+- Three interchangeable metadata providers (MobyGames, IGDB, RAWG) behind an `IGameMetadataProvider` abstraction, switchable at runtime
 - Descriptions honour the language fallback: selected language → English → any available
 - Cover art and screenshots are downloaded once and cached locally
 - Genres from the provider are mapped onto stable, normalised genre IDs
@@ -128,7 +128,7 @@ The main window is laid out in three columns:
 | **Build** | [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) or newer |
 | **Run** | .NET 8 runtime, or a self-contained publish (no runtime needed) |
 | **Emulator** | [DOSBox](https://www.dosbox.com/) or [DOSBox Staging](https://dosbox-staging.github.io/) |
-| **Metadata** | A ScreenScraper account and developer credentials (optional) |
+| **Metadata** | A free API key for MobyGames, IGDB or RAWG (optional; IGDB/RAWG are instant self-service) |
 
 Linux additionally needs the usual desktop libraries Avalonia relies on
 (`libx11`, `libice`, `libsm`, `libfontconfig1`); they are present on any normal desktop install.
@@ -224,47 +224,40 @@ exactly what will be written before you launch anything.
 
 ---
 
-## Configuring ScreenScraper
+## Configuring the metadata provider
 
-DosBoxxer ships **no credentials**. Metadata lookup works **out of the box, anonymously** — no
-configuration is required. Everything in **Settings → ScreenScraper** is optional and only
-raises your request quota:
+DosBoxxer supports three interchangeable online databases and ships **no credentials** for any of
+them. Pick the active one in **Settings → Metadata provider** and enter its credentials below the
+dropdown. The `IGameMetadataProvider` abstraction means the rest of the app never depends on which
+one is active; the `ActiveMetadataProvider` facade routes at runtime, and cached cover art from
+any provider keeps working even after you switch.
 
-- **Nothing configured** → anonymous access (works, but ScreenScraper throttles it).
-- **User account only** (`ssid` + `sspassword`) → your personal quota is used.
-- **Developer access** (`devid` + `devpassword`) → the application gets its own quota; combined
-  with a user account this is the highest tier.
+| Provider | Auth | How to get it | DOS coverage |
+|---|---|---|---|
+| **MobyGames** | API key | Requested from MobyGames (manual, free) | Very good |
+| **IGDB** | Client ID + Client Secret | **Instant, free** — register an app at [dev.twitch.tv](https://dev.twitch.tv/console/apps) | Very good |
+| **RAWG** | API key | **Instant, free** — sign up at [rawg.io](https://rawg.io/apidocs) | Thinner for DOS; often modern cover art |
 
-The request always sends `softname` and adds whichever credential pairs are present, so all three
-cases are handled automatically.
+**IGDB is the recommended free option**: it is the only one with instant, self-service access
+*and* good DOS coverage. IGDB uses the Twitch OAuth client-credentials flow — the launcher
+exchanges your Client ID and Secret for a bearer token automatically and caches it.
 
-| Field | Notes |
-|---|---|
-| **Developer ID / password** | Optional. Issued by ScreenScraper to application authors on request (forum thread "Demande d'accès API"). Grants the application its own request quota. |
-| **Software name** | The `softname` sent with every request. Defaults to `DosBoxxer`. |
-| **User name / password** | Optional. Your personal ScreenScraper account; raises your request quota. |
-| **System ID** | `135` is *PC Dos* in the ScreenScraper system list. Leave empty to search every system. |
-| **Preferred media region** | `wor` (world), `us`, `eu`, `jp`, … Controls which cover variant is preferred. |
-| **Max screenshots per game** | 0–20. |
+Each provider restricts its search to the DOS platform by a configurable platform id
+(MobyGames `2`, IGDB `13`, RAWG has no dedicated DOS platform so its filter is left empty). All
+providers cache searches and game records on disk, enforce a per-provider minimum request
+interval (MobyGames one request / 10 s, IGDB ~4 / s, RAWG conservative), retry only transient
+failures with backoff, and honour HTTP 429.
 
-Use **Test connection** to verify the credentials; it reports your remaining daily quota.
+Use **Test connection** to verify the active provider's credentials.
 
-> **Security:** passwords are never written to `settings.json`. They are stored separately,
-> encrypted with AES-GCM, in `secrets.dat` (see [Data directories](#data-directories)). Request
-> URLs contain credentials, so every log message is scrubbed before being written.
+> **Security:** API keys and secrets are never written to `settings.json`. They are stored
+> separately, encrypted with AES-GCM, in `secrets.dat` (see [Data directories](#data-directories)).
+> Request URLs and errors are scrubbed before being logged.
 
-**API endpoints used** (ScreenScraper API v2, documented at
-<https://api.screenscraper.fr/webapi2.php>):
-
-| Endpoint | Purpose |
-|---|---|
-| `ssuserInfos.php` | Credential check and quota display |
-| `jeuRecherche.php` | Game search by name |
-| `jeuInfos.php` | Full record for one game |
-
-The client enforces a minimum interval between requests, retries only transient failures with
-exponential backoff, honours HTTP 429, and caches both searches and game records on disk so a
-restart never triggers new requests.
+> **Note on ScreenScraper:** an earlier `ScreenScraperMetadataProvider` also exists in the code
+> (behind the same abstraction) but is not wired into the provider dropdown. ScreenScraper
+> requires developer API credentials (`devid`/`devpassword`) that are granted manually on their
+> forum; it was superseded here by the three providers above.
 
 ---
 
@@ -407,7 +400,7 @@ To add a language:
 dotnet test
 ```
 
-188 tests, none of which require a ScreenScraper account, a network connection or an installed
+237 tests, none of which require any provider account, a network connection or an installed
 DOSBox. Coverage includes:
 
 - Recursive `.exe` / `.bat` / `.com` discovery, installer ranking
@@ -419,9 +412,11 @@ DOSBox. Coverage includes:
   (shell metacharacters stay literal), exit code and play statistics
 - Genre mapping from provider labels, including compound labels
 - Metadata merge: field selection, protection of manual edits, no accidental clearing
-- ScreenScraper response parsing from recorded fixtures, including inconsistent shapes
-  (single object instead of array, numeric IDs, empty strings) and rejection of media URLs
-  from foreign hosts
+- Response parsing for all three providers (ScreenScraper, MobyGames, IGDB, RAWG) from recorded
+  fixtures, including inconsistent shapes (single object instead of array, numeric IDs, empty
+  strings, HTML descriptions, Unix-timestamp dates) and rejection of media URLs from foreign hosts
+- Provider selection: the `ActiveMetadataProvider` routes to the configured provider and the
+  `CompositeMediaHttpClient` routes each media URL to the provider that owns its host
 - Settings serialization, secret encryption at rest, data-directory creation
 - Repository round-trips, cascade deletes, play-session accumulation, restart persistence
 - Translation completeness across all nine languages
@@ -472,20 +467,20 @@ bundle itself.
 Usually an 8.3 name problem. Check the log for `had to be shortened to DOS 8.3 form` and rename
 the offending folder, or point the launcher at a starter closer to the game root.
 
-**"The ScreenScraper credentials were rejected"**
-Verify developer ID, developer password and software name. ScreenScraper also returns this error
-when the API is temporarily closed to non-registered software — *Test connection* distinguishes
-the two.
+**"The API key was rejected"**
+Check the credentials for the active provider in Settings → Metadata provider. For IGDB, both the
+Client ID and the Client Secret must be from the same Twitch application. Use *Test connection* to
+confirm before searching.
 
-**"The ScreenScraper request limit has been reached"**
-Anonymous and free accounts have a low daily quota. Wait, or add your personal account under
-Settings → ScreenScraper. The launcher already caches aggressively and never issues parallel
-requests.
+**"The request limit has been reached"**
+MobyGames (one request / 10 s) and RAWG have quotas; IGDB allows ~4 requests per second. The
+launcher caches searches and game records and never issues parallel requests, so this normally
+only appears during a large batch of additions — wait a moment and retry.
 
 **No cover art appears**
-Not every DOS game has box art in the ScreenScraper database. The grid then falls back to a
-screenshot, and finally to a generated placeholder. You can always set a cover manually via
-right-click → *Change cover*.
+Not every DOS game has box art in every database. The grid then falls back to a screenshot, and
+finally to a generated placeholder. Switching the provider (Settings → Metadata provider) may find
+art the other one lacks, or you can set a cover manually via right-click → *Change cover*.
 
 **The library is slow with very many games**
 The grid uses a wrapping panel rather than a virtualising one, so all tiles are realised. Image
@@ -510,7 +505,11 @@ DosBoxxer.sln
 │   │   ├── Database/              connection factory, schema migrations
 │   │   ├── Repositories/          SQLite game repository
 │   │   ├── DosBox/                config document, config builder, launcher
-│   │   ├── ScreenScraper/         HTTP client, DTOs, provider adapter, genre mapper
+│   │   ├── MobyGames/             HTTP client, DTOs, provider adapter, genre mapper
+│   │   ├── Igdb/                  HTTP client (Twitch OAuth), DTOs, provider adapter
+│   │   ├── Rawg/                  HTTP client, DTOs, provider adapter
+│   │   ├── ScreenScraper/         HTTP client, DTOs, provider adapter (dormant)
+│   │   ├── ActiveMetadataProvider + CompositeMediaHttpClient (provider selection)
 │   │   ├── Media/                 media downloader, metadata cache
 │   │   └── Settings/              settings service, encrypted secret store
 │   ├── Localization/              service + embedded JSON translations
@@ -556,9 +555,11 @@ speculative abstraction beyond that has been built.
 24×24 grid and is covered by this project's licence. No third-party icon font or SVG pack is
 bundled, so there is nothing additional to attribute.
 
-**ScreenScraper:** DosBoxxer is an API *client*. Game metadata and artwork remain the property of
-their respective rights holders and are subject to
-[ScreenScraper's terms of use](https://screenscraper.fr/). No credentials are distributed with
-this software.
+**Metadata providers:** DosBoxxer is an API *client* for
+[MobyGames](https://www.mobygames.com/info/api/), [IGDB](https://api-docs.igdb.com/) and
+[RAWG](https://rawg.io/apidocs) (and retains a dormant ScreenScraper client). Game metadata and
+artwork remain the property of their respective rights holders and are subject to each provider's
+terms of use. No credentials are distributed with this software, and every provider's use is
+non-commercial unless you have arranged otherwise with them.
 
 DOSBox itself is **not** bundled — it is licensed under the GPL and must be installed separately.

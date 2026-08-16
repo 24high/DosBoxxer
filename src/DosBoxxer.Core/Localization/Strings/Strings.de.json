@@ -311,5 +311,17 @@
   "Settings.MobyPlatformIdHint": "2 steht in der MobyGames-Plattformliste für „DOS“. Nur ändern, um eine andere Plattform zu scrapen.",
   "Settings.MobyMaxScreenshots": "Maximale Screenshots pro Spiel",
   "Error.InvalidApiKey": "Der MobyGames-API-Key wurde abgelehnt. Prüfe den Key in den Einstellungen.",
-  "Error.ProviderUnreachable": "Der Metadaten-Anbieter ist derzeit nicht erreichbar."
+  "Error.ProviderUnreachable": "Der Metadaten-Anbieter ist derzeit nicht erreichbar.",
+  "Settings.SectionMetadata": "Metadaten-Anbieter",
+  "Settings.MetadataProvider": "Anbieter",
+  "Settings.MetadataProviderHint": "Wähle, welche Online-Datenbank deine Spiele anreichert. Trage unten die Zugangsdaten des gewählten Anbieters ein.",
+  "Settings.IgdbHint": "IGDB ist kostenlos und sofort nutzbar: Lege auf dev.twitch.tv eine Anwendung an, um Client-ID und Client-Secret zu erhalten. Gute DOS-Abdeckung; die API erlaubt ca. 4 Anfragen pro Sekunde.",
+  "Settings.IgdbClientId": "Client-ID",
+  "Settings.IgdbClientSecret": "Client-Secret",
+  "Settings.IgdbPlatformId": "Plattform-ID",
+  "Settings.IgdbPlatformIdHint": "13 steht in der IGDB-Plattformliste für „DOS“. Nur ändern, um eine andere Plattform zu scrapen.",
+  "Settings.RawgHint": "RAWG vergibt bei der Anmeldung auf rawg.io sofort einen kostenlosen API-Key. Beachte: RAWGs Abdeckung von DOS-Ära-Spielen ist dünner und die Cover sind oft modern.",
+  "Settings.RawgApiKey": "API-Key",
+  "Settings.RawgPlatformId": "Plattform-ID (optional)",
+  "Settings.RawgPlatformIdHint": "RAWG hat keine eigene DOS-Plattform – leer lassen, um alle Plattformen zu durchsuchen."
 }

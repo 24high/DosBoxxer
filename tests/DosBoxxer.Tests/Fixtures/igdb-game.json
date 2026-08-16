@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1069,
+    "name": "Doom",
+    "summary": "You are a space marine fighting demons on the moons of Mars.",
+    "first_release_date": 755481600,
+    "cover": { "id": 1, "image_id": "co1n5f" },
+    "screenshots": [
+      { "id": 10, "image_id": "sc1aa" },
+      { "id": 11, "image_id": "sc1bb" },
+      { "id": 12, "image_id": "sc1cc" }
+    ],
+    "genres": [
+      { "id": 5, "name": "Shooter" },
+      { "id": 31, "name": "Adventure" }
+    ],
+    "platforms": [
+      { "id": 13, "name": "DOS" },
+      { "id": 6, "name": "PC (Microsoft Windows)" }
+    ],
+    "involved_companies": [
+      { "company": { "id": 1, "name": "id Software" }, "developer": true, "publisher": false },
+      { "company": { "id": 2, "name": "GT Interactive" }, "developer": false, "publisher": true }
+    ]
+  }
+]

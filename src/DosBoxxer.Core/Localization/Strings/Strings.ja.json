@@ -311,5 +311,17 @@
   "Settings.MobyPlatformIdHint": "MobyGames のプラットフォーム一覧では 2 が「DOS」です。別のプラットフォームを取得する場合のみ変更してください。",
   "Settings.MobyMaxScreenshots": "1 本あたりの最大スクリーンショット数",
   "Error.InvalidApiKey": "MobyGames の API キーが拒否されました。設定でキーを確認してください。",
-  "Error.ProviderUnreachable": "現在メタデータ提供元に接続できません。"
+  "Error.ProviderUnreachable": "現在メタデータ提供元に接続できません。",
+  "Settings.SectionMetadata": "メタデータ提供元",
+  "Settings.MetadataProvider": "提供元",
+  "Settings.MetadataProviderHint": "ゲーム情報を補完するオンラインデータベースを選び、下に選択した提供元の認証情報を入力してください。",
+  "Settings.IgdbHint": "IGDB は無料で即時利用できます。dev.twitch.tv でアプリを作成すると Client ID と Client Secret が得られます。DOS のカバー率は良好で、API は毎秒約 4 リクエストまで許可します。",
+  "Settings.IgdbClientId": "Client ID",
+  "Settings.IgdbClientSecret": "Client Secret",
+  "Settings.IgdbPlatformId": "プラットフォーム ID",
+  "Settings.IgdbPlatformIdHint": "IGDB のプラットフォーム一覧では 13 が「DOS」です。別のプラットフォームを取得する場合のみ変更してください。",
+  "Settings.RawgHint": "RAWG は rawg.io に登録するとすぐに無料の API キーを発行します。RAWG は DOS 時代のゲームのカバー率が低く、カバー画像も現代的なものが多い点に注意してください。",
+  "Settings.RawgApiKey": "API キー",
+  "Settings.RawgPlatformId": "プラットフォーム ID（任意）",
+  "Settings.RawgPlatformIdHint": "RAWG には専用の DOS プラットフォームがありません。空欄にするとすべてのプラットフォームを検索します。"
 }

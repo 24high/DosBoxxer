@@ -8,8 +8,10 @@ using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Infrastructure;
 using DosBoxxer.Core.Infrastructure.Database;
 using DosBoxxer.Core.Infrastructure.DosBox;
+using DosBoxxer.Core.Infrastructure.Igdb;
 using DosBoxxer.Core.Infrastructure.Media;
 using DosBoxxer.Core.Infrastructure.MobyGames;
+using DosBoxxer.Core.Infrastructure.Rawg;
 using DosBoxxer.Core.Infrastructure.Repositories;
 using DosBoxxer.Core.Infrastructure.ScreenScraper;
 using DosBoxxer.Core.Infrastructure.Settings;
@@ -59,28 +61,54 @@ public static class CompositionRoot
         services.AddSingleton<IDosBoxLauncher, DosBoxLauncher>();
 
         // ---- metadata -----------------------------------------------------------------
-        // MobyGames is the active metadata provider. The ScreenScraper client is still
-        // registered so the alternative provider remains available, but MobyGames supplies both
-        // IGameMetadataProvider and the IMediaHttpClient used to download cover art.
-        services.AddHttpClient(MobyGamesClient.HttpClientName, client =>
-        {
-            client.BaseAddress = new Uri(MobyGamesClient.BaseAddress);
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DosBoxxer", "1.0"));
-        });
+        // Three interchangeable metadata providers are registered. The ActiveMetadataProvider
+        // facade forwards to the one selected in the settings, and the CompositeMediaHttpClient
+        // downloads cover art from whichever provider's CDN a URL belongs to.
+        static void AddProviderHttpClient(IServiceCollection s, string name, string baseAddress) =>
+            s.AddHttpClient(name, client =>
+            {
+                client.BaseAddress = new Uri(baseAddress);
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DosBoxxer", "1.0"));
+            });
 
-        services.AddHttpClient(ScreenScraperClient.HttpClientName, client =>
-        {
-            client.BaseAddress = new Uri(ScreenScraperClient.BaseAddress);
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DosBoxxer", "1.0"));
-        });
+        AddProviderHttpClient(services, MobyGamesClient.HttpClientName, MobyGamesClient.BaseAddress);
+        AddProviderHttpClient(services, ScreenScraperClient.HttpClientName, ScreenScraperClient.BaseAddress);
+        AddProviderHttpClient(services, IgdbClient.ApiHttpClientName, IgdbClient.ApiBaseAddress);
+        AddProviderHttpClient(services, IgdbClient.TokenHttpClientName, IgdbClient.TokenEndpoint);
+        AddProviderHttpClient(services, RawgClient.HttpClientName, RawgClient.BaseAddress);
 
+        // Provider clients (also used as media clients).
         services.AddSingleton<MobyGamesClient>();
         services.AddSingleton<ScreenScraperClient>();
+        services.AddSingleton<IgdbClient>();
+        services.AddSingleton<RawgClient>();
+
         services.AddSingleton<IMetadataCache, FileMetadataCache>();
-        services.AddSingleton<IGameMetadataProvider, MobyGamesMetadataProvider>();
-        services.AddSingleton<IMediaHttpClient>(sp => sp.GetRequiredService<MobyGamesClient>());
+
+        // Concrete providers, then the facade that selects the active one.
+        services.AddSingleton<MobyGamesMetadataProvider>();
+        services.AddSingleton<IgdbMetadataProvider>();
+        services.AddSingleton<RawgMetadataProvider>();
+        services.AddSingleton<IGameMetadataProvider>(sp => new ActiveMetadataProvider(
+            new IGameMetadataProvider[]
+            {
+                sp.GetRequiredService<MobyGamesMetadataProvider>(),
+                sp.GetRequiredService<IgdbMetadataProvider>(),
+                sp.GetRequiredService<RawgMetadataProvider>(),
+            },
+            sp.GetRequiredService<ISettingsService>()));
+
+        // Media routing: every provider client can serve its own CDN.
+        services.AddSingleton<IMediaHttpClient>(sp => new CompositeMediaHttpClient(
+            new IMediaHttpClient[]
+            {
+                sp.GetRequiredService<MobyGamesClient>(),
+                sp.GetRequiredService<IgdbClient>(),
+                sp.GetRequiredService<RawgClient>(),
+                sp.GetRequiredService<ScreenScraperClient>(),
+            }));
+
         services.AddSingleton<IMediaDownloader, MediaDownloader>();
         services.AddSingleton<IMetadataMerger, MetadataMerger>();
         services.AddSingleton<IGameLibraryService, GameLibraryService>();

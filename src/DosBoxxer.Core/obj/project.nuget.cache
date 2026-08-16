@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "bqz8K2xHzwA=",
+  "dgSpecHash": "OaOy2YX8M7k=",
   "success": true,
   "projectFilePath": "/home/dh/DosBoxxer/src/DosBoxxer.Core/DosBoxxer.Core.csproj",
   "expectedPackageFiles": [
@@ -19,11 +19,14 @@
     "/home/dh/.nuget/packages/microsoft.extensions.options/8.0.2/microsoft.extensions.options.8.0.2.nupkg.sha512",
     "/home/dh/.nuget/packages/microsoft.extensions.options.configurationextensions/8.0.0/microsoft.extensions.options.configurationextensions.8.0.0.nupkg.sha512",
     "/home/dh/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/home/dh/.nuget/packages/microsoft.net.illink.tasks/8.0.29/microsoft.net.illink.tasks.8.0.29.nupkg.sha512",
     "/home/dh/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.6/sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "/home/dh/.nuget/packages/sqlitepclraw.core/2.1.6/sqlitepclraw.core.2.1.6.nupkg.sha512",
     "/home/dh/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.6/sqlitepclraw.lib.e_sqlite3.2.1.6.nupkg.sha512",
     "/home/dh/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.6/sqlitepclraw.provider.e_sqlite3.2.1.6.nupkg.sha512",
-    "/home/dh/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512"
+    "/home/dh/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512",
+    "/home/dh/.nuget/packages/microsoft.netcore.app.runtime.osx-x64/8.0.29/microsoft.netcore.app.runtime.osx-x64.8.0.29.nupkg.sha512",
+    "/home/dh/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-x64/8.0.29/microsoft.aspnetcore.app.runtime.osx-x64.8.0.29.nupkg.sha512"
   ],
   "logs": []
 }

@@ -61,33 +61,100 @@
           </StackPanel>
         </Border>
 
-        <!-- ==================== MobyGames ==================== -->
+        <!-- ==================== Metadata provider ==================== -->
         <Border Classes="card" Padding="20">
           <StackPanel Spacing="14">
-            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionMobyGames}" />
-            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyHint}" />
+            <TextBlock Classes="h2" Text="{loc:Localize Settings.SectionMetadata}" />
 
             <StackPanel Spacing="6">
-              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyApiKey}" />
-              <TextBox Text="{Binding MobyGamesApiKey, Mode=TwoWay}"
-                       PasswordChar="•"
-                       AutomationProperties.Name="{loc:Localize Settings.MobyApiKey}" />
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MetadataProvider}" />
+              <ComboBox HorizontalAlignment="Left"
+                        MinWidth="220"
+                        ItemsSource="{Binding Providers}"
+                        SelectedItem="{Binding SelectedProvider, Mode=TwoWay}"
+                        AutomationProperties.Name="{loc:Localize Settings.MetadataProvider}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MetadataProviderHint}" />
             </StackPanel>
 
-            <Grid ColumnDefinitions="*,14,*">
-              <StackPanel Grid.Column="0" Spacing="6">
-                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyPlatformId}" />
-                <TextBox Text="{Binding MobyGamesPlatformId, Mode=TwoWay}" />
-              </StackPanel>
-              <StackPanel Grid.Column="2" Spacing="6">
-                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyMaxScreenshots}" />
-                <NumericUpDown Value="{Binding MobyGamesMaxScreenshots, Mode=TwoWay}"
-                               Minimum="0" Maximum="20" Increment="1"
-                               FormatString="0" />
-              </StackPanel>
-            </Grid>
+            <Border Classes="separator" />
 
-            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyPlatformIdHint}" />
+            <!-- MobyGames -->
+            <StackPanel Spacing="14" IsVisible="{Binding IsMobyGamesSelected}">
+              <TextBlock Classes="h2" Text="MobyGames" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyHint}" />
+              <StackPanel Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyApiKey}" />
+                <TextBox Text="{Binding MobyGamesApiKey, Mode=TwoWay}" PasswordChar="•" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,14,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyPlatformId}" />
+                  <TextBox Text="{Binding MobyGamesPlatformId, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyMaxScreenshots}" />
+                  <NumericUpDown Value="{Binding MobyGamesMaxScreenshots, Mode=TwoWay}"
+                                 Minimum="0" Maximum="20" Increment="1" FormatString="0" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MobyPlatformIdHint}" />
+            </StackPanel>
+
+            <!-- IGDB -->
+            <StackPanel Spacing="14" IsVisible="{Binding IsIgdbSelected}">
+              <TextBlock Classes="h2" Text="IGDB" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.IgdbHint}" />
+              <Grid ColumnDefinitions="*,14,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.IgdbClientId}" />
+                  <TextBox Text="{Binding IgdbClientId, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.IgdbClientSecret}" />
+                  <TextBox Text="{Binding IgdbClientSecret, Mode=TwoWay}" PasswordChar="•" />
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,14,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.IgdbPlatformId}" />
+                  <TextBox Text="{Binding IgdbPlatformId, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyMaxScreenshots}" />
+                  <NumericUpDown Value="{Binding IgdbMaxScreenshots, Mode=TwoWay}"
+                                 Minimum="0" Maximum="20" Increment="1" FormatString="0" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.IgdbPlatformIdHint}" />
+            </StackPanel>
+
+            <!-- RAWG -->
+            <StackPanel Spacing="14" IsVisible="{Binding IsRawgSelected}">
+              <TextBlock Classes="h2" Text="RAWG" />
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.RawgHint}" />
+              <StackPanel Spacing="6">
+                <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.RawgApiKey}" />
+                <TextBox Text="{Binding RawgApiKey, Mode=TwoWay}" PasswordChar="•" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,14,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.RawgPlatformId}" />
+                  <TextBox Text="{Binding RawgPlatformId, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Classes="sectionLabel" Text="{loc:Localize Settings.MobyMaxScreenshots}" />
+                  <NumericUpDown Value="{Binding RawgMaxScreenshots, Mode=TwoWay}"
+                                 Minimum="0" Maximum="20" Increment="1" FormatString="0" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.RawgPlatformIdHint}" />
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="12">
               <Button Content="{loc:Localize Settings.TestConnection}"

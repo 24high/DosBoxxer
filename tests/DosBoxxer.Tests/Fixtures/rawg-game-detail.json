@@ -1,0 +1,26 @@
+{
+  "id": 9885,
+  "name": "Doom",
+  "released": "1993-12-10",
+  "description_raw": "Doom is a landmark first-person shooter set on the moons of Mars.",
+  "background_image": "https://media.rawg.io/media/games/doom-front.jpg",
+  "genres": [
+    { "id": 2, "name": "Shooter" },
+    { "id": 4, "name": "Action" }
+  ],
+  "developers": [
+    { "id": 1, "name": "id Software" }
+  ],
+  "publishers": [
+    { "id": 2, "name": "GT Interactive" }
+  ],
+  "platforms": [
+    { "platform": { "id": 4, "name": "PC" } }
+  ],
+  "short_screenshots": [
+    { "id": -1, "image": "https://media.rawg.io/media/games/doom-front.jpg" },
+    { "id": 100, "image": "https://media.rawg.io/media/screenshots/doom-1.jpg" },
+    { "id": 101, "image": "https://media.rawg.io/media/screenshots/doom-2.jpg" },
+    { "id": 102, "image": "https://evil.example.com/steal.jpg" }
+  ]
+}

@@ -46,6 +46,21 @@ public sealed class CoverSizeOptionViewModel : ViewModelBase
     }
 }
 
+/// <summary>Entry of the metadata-provider drop-down.</summary>
+public sealed class MetadataProviderOptionViewModel : ObservableObject
+{
+    public MetadataProviderOptionViewModel(string key, string displayName)
+    {
+        Key = key;
+        DisplayName = displayName;
+    }
+
+    /// <summary>Stable provider key stored in the settings (<c>mobygames</c>, <c>igdb</c>, <c>rawg</c>).</summary>
+    public string Key { get; }
+
+    public string DisplayName { get; }
+}
+
 /// <summary>Localised entry of the language drop-down.</summary>
 public sealed class LanguageOptionViewModel : ObservableObject
 {

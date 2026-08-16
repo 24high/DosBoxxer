@@ -232,6 +232,8 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
         return MobyGamesCallResult<T>.Failure(MetadataErrorKind.ProviderUnavailable);
     }
 
+    public bool AcceptsUrl(string url) => TryValidateMediaUrl(url, out _);
+
     public async Task<Stream?> DownloadMediaAsync(string url, CancellationToken cancellationToken)
     {
         if (!TryValidateMediaUrl(url, out var uri))

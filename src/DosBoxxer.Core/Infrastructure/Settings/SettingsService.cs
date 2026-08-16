@@ -62,6 +62,8 @@ public sealed class SettingsService : ISettingsService
 
         settings.ScreenScraper ??= new ScreenScraperSettings();
         settings.MobyGames ??= new MobyGamesSettings();
+        settings.Igdb ??= new IgdbSettings();
+        settings.Rawg ??= new RawgSettings();
         settings.Window ??= new WindowStateSettings();
 
         settings.ScreenScraper.DeveloperPassword =
@@ -70,6 +72,10 @@ public sealed class SettingsService : ISettingsService
             await _secretStore.GetAsync(SecretKeys.ScreenScraperUserPassword, cancellationToken).ConfigureAwait(false);
         settings.MobyGames.ApiKey =
             await _secretStore.GetAsync(SecretKeys.MobyGamesApiKey, cancellationToken).ConfigureAwait(false);
+        settings.Igdb.ClientSecret =
+            await _secretStore.GetAsync(SecretKeys.IgdbClientSecret, cancellationToken).ConfigureAwait(false);
+        settings.Rawg.ApiKey =
+            await _secretStore.GetAsync(SecretKeys.RawgApiKey, cancellationToken).ConfigureAwait(false);
 
         Current = settings;
     }
@@ -83,6 +89,10 @@ public sealed class SettingsService : ISettingsService
         await _secretStore.SetAsync(SecretKeys.ScreenScraperUserPassword, settings.ScreenScraper.UserPassword, cancellationToken)
             .ConfigureAwait(false);
         await _secretStore.SetAsync(SecretKeys.MobyGamesApiKey, settings.MobyGames.ApiKey, cancellationToken)
+            .ConfigureAwait(false);
+        await _secretStore.SetAsync(SecretKeys.IgdbClientSecret, settings.Igdb.ClientSecret, cancellationToken)
+            .ConfigureAwait(false);
+        await _secretStore.SetAsync(SecretKeys.RawgApiKey, settings.Rawg.ApiKey, cancellationToken)
             .ConfigureAwait(false);
 
         Current = settings;

@@ -311,5 +311,17 @@
   "Settings.MobyPlatformIdHint": "MobyGames प्लेटफ़ॉर्म सूची में 2 का अर्थ “DOS” है। केवल किसी अन्य प्लेटफ़ॉर्म के लिए बदलें।",
   "Settings.MobyMaxScreenshots": "प्रति गेम अधिकतम स्क्रीनशॉट",
   "Error.InvalidApiKey": "MobyGames API कुंजी अस्वीकार कर दी गई। सेटिंग्स में कुंजी जाँचें।",
-  "Error.ProviderUnreachable": "मेटाडेटा प्रदाता अभी उपलब्ध नहीं है।"
+  "Error.ProviderUnreachable": "मेटाडेटा प्रदाता अभी उपलब्ध नहीं है।",
+  "Settings.SectionMetadata": "मेटाडेटा प्रदाता",
+  "Settings.MetadataProvider": "प्रदाता",
+  "Settings.MetadataProviderHint": "चुनें कि कौन सा ऑनलाइन डेटाबेस आपके गेम समृद्ध करे, और नीचे चयनित प्रदाता के क्रेडेंशियल दर्ज करें।",
+  "Settings.IgdbHint": "IGDB मुफ़्त और तुरंत उपलब्ध है: dev.twitch.tv पर एक ऐप्लिकेशन बनाकर Client ID और Client Secret पाएँ। DOS कवरेज अच्छा है; API लगभग 4 अनुरोध प्रति सेकंड की अनुमति देता है।",
+  "Settings.IgdbClientId": "Client ID",
+  "Settings.IgdbClientSecret": "Client Secret",
+  "Settings.IgdbPlatformId": "प्लेटफ़ॉर्म ID",
+  "Settings.IgdbPlatformIdHint": "IGDB प्लेटफ़ॉर्म सूची में 13 का अर्थ “DOS” है। केवल किसी अन्य प्लेटफ़ॉर्म के लिए बदलें।",
+  "Settings.RawgHint": "rawg.io पर साइन अप करते ही RAWG तुरंत मुफ़्त API कुंजी देता है। ध्यान दें कि RAWG में DOS-युग के खेलों का कवरेज कम है और कवर अक्सर आधुनिक होते हैं।",
+  "Settings.RawgApiKey": "API कुंजी",
+  "Settings.RawgPlatformId": "प्लेटफ़ॉर्म ID (वैकल्पिक)",
+  "Settings.RawgPlatformIdHint": "RAWG में कोई समर्पित DOS प्लेटफ़ॉर्म नहीं है; सभी प्लेटफ़ॉर्म खोजने के लिए खाली छोड़ें।"
 }

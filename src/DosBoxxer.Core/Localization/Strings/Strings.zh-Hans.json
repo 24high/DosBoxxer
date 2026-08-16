@@ -311,5 +311,17 @@
   "Settings.MobyPlatformIdHint": "在 MobyGames 平台列表中，2 表示“DOS”。仅在抓取其他平台时才更改。",
   "Settings.MobyMaxScreenshots": "每个游戏最多截图数",
   "Error.InvalidApiKey": "MobyGames API 密钥被拒绝。请在设置中检查密钥。",
-  "Error.ProviderUnreachable": "目前无法连接元数据提供方。"
+  "Error.ProviderUnreachable": "目前无法连接元数据提供方。",
+  "Settings.SectionMetadata": "元数据提供方",
+  "Settings.MetadataProvider": "提供方",
+  "Settings.MetadataProviderHint": "选择用于丰富游戏信息的在线数据库，并在下方填写所选提供方的凭据。",
+  "Settings.IgdbHint": "IGDB 免费且即时可用：在 dev.twitch.tv 创建一个应用即可获得 Client ID 和 Client Secret。DOS 覆盖良好；API 允许约每秒 4 次请求。",
+  "Settings.IgdbClientId": "Client ID",
+  "Settings.IgdbClientSecret": "Client Secret",
+  "Settings.IgdbPlatformId": "平台 ID",
+  "Settings.IgdbPlatformIdHint": "在 IGDB 平台列表中，13 表示“DOS”。仅在抓取其他平台时才更改。",
+  "Settings.RawgHint": "在 rawg.io 注册后即可立即获得免费 API 密钥。请注意 RAWG 对 DOS 时代游戏的覆盖较少，封面也多为现代版本。",
+  "Settings.RawgApiKey": "API 密钥",
+  "Settings.RawgPlatformId": "平台 ID（可选）",
+  "Settings.RawgPlatformIdHint": "RAWG 没有专门的 DOS 平台；留空以搜索所有平台。"
 }

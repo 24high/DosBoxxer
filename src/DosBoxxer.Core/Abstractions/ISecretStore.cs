@@ -20,4 +20,6 @@ public static class SecretKeys
     public const string ScreenScraperDeveloperPassword = "screenscraper.devpassword";
     public const string ScreenScraperUserPassword = "screenscraper.userpassword";
     public const string MobyGamesApiKey = "mobygames.apikey";
+    public const string IgdbClientSecret = "igdb.clientsecret";
+    public const string RawgApiKey = "rawg.apikey";
 }

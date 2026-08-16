@@ -10,6 +10,12 @@ namespace DosBoxxer.Core.Abstractions;
 public interface IMediaHttpClient
 {
     /// <summary>
+    /// True when this client recognises the URL's host as one of its own CDNs. Used by the
+    /// composite client to route a media URL to the provider that produced it.
+    /// </summary>
+    bool AcceptsUrl(string url);
+
+    /// <summary>
     /// Returns a seekable stream with the downloaded bytes, or <c>null</c> when the URL is not
     /// from an allowed host or the request failed. The caller owns and disposes the stream.
     /// </summary>

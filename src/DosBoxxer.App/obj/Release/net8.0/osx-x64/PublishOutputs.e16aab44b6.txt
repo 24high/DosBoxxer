@@ -1,0 +1,6 @@
+/home/dh/DosBoxxer/publish/single/osx-x64/DosBoxxer.pdb
+/home/dh/DosBoxxer/publish/single/osx-x64/libAvaloniaNative.dylib
+/home/dh/DosBoxxer/publish/single/osx-x64/libHarfBuzzSharp.dylib
+/home/dh/DosBoxxer/publish/single/osx-x64/libSkiaSharp.dylib
+/home/dh/DosBoxxer/publish/single/osx-x64/DosBoxxer.Core.pdb
+/home/dh/DosBoxxer/publish/single/osx-x64/DosBoxxer

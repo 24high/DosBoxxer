@@ -1,0 +1,3 @@
+/home/dh/DosBoxxer/publish/single/linux-x64/DosBoxxer.pdb
+/home/dh/DosBoxxer/publish/single/linux-x64/DosBoxxer.Core.pdb
+/home/dh/DosBoxxer/publish/single/linux-x64/DosBoxxer
