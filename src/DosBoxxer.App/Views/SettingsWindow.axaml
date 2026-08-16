@@ -82,6 +82,14 @@
               <TextBlock Classes="tertiary wrap" Text="{loc:Localize Settings.MetadataProviderHint}" />
             </StackPanel>
 
+            <Border Classes="infoBanner">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Grid.Column="0" Data="{StaticResource IconInfo}" Width="16" Height="16"
+                          VerticalAlignment="Top" Margin="0,1,10,0" />
+                <TextBlock Grid.Column="1" Classes="wrap" Text="{loc:Localize Settings.ProviderComparison}" />
+              </Grid>
+            </Border>
+
             <Border Classes="separator" />
 
             <!-- MobyGames -->

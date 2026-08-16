@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using DosBoxxer.Core.Abstractions;
+using DosBoxxer.Core.Helpers;
 
 namespace DosBoxxer.Core.Infrastructure;
 
@@ -15,11 +16,15 @@ public sealed class AppPaths : IAppPaths
 {
     public const string ApplicationFolderName = "DosBoxxer";
 
-    public AppPaths(string? overrideRoot = null)
+    public AppPaths(string? overrideRoot = null, string? programDirectory = null)
     {
         DataRoot = overrideRoot is { Length: > 0 }
             ? Path.GetFullPath(overrideRoot)
             : ResolveDefaultRoot();
+
+        ProgramDirectory = programDirectory is { Length: > 0 }
+            ? Path.GetFullPath(programDirectory)
+            : PathHelper.TrimTrailingSeparator(AppContext.BaseDirectory);
 
         DatabaseDirectory = Path.Combine(DataRoot, "database");
         CacheDirectory = Path.Combine(DataRoot, "cache");
@@ -34,6 +39,8 @@ public sealed class AppPaths : IAppPaths
     }
 
     public string DataRoot { get; }
+
+    public string ProgramDirectory { get; }
 
     public string DatabaseDirectory { get; }
 

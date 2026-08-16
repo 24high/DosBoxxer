@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "DOSBox executable",
   "Settings.DosBoxExecutableHint": "For example C:\\Program Files\\DOSBox\\DOSBox.exe or /usr/bin/dosbox.",
   "Settings.BaseConfig": "Default dosbox.conf",
-  "Settings.BaseConfigHint": "Used as the base for every game. DosBoxxer never modifies this file.",
+  "Settings.BaseConfigHint": "Used as the base for every game. DosBoxxer never modifies this file. Leave empty to use the built-in default (starts games fullscreen, scaled with aspect ratio preserved), which is written to the program folder on first launch.",
   "Settings.AdditionalArguments": "Additional DOSBox arguments",
   "Settings.AdditionalArgumentsHint": "Passed to DOSBox as separate arguments. No shell is involved.",
   "Settings.CloseAfterExit": "Close DOSBox when the game exits",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "RAWG offers a free API key instantly on signup at rawg.io. Note that RAWG's coverage of DOS-era games is thinner and its cover art is often modern.",
   "Settings.RawgApiKey": "API key",
   "Settings.RawgPlatformId": "Platform ID (optional)",
-  "Settings.RawgPlatformIdHint": "RAWG has no dedicated DOS platform, so leave this empty to search all platforms."
+  "Settings.RawgPlatformIdHint": "RAWG has no dedicated DOS platform, so leave this empty to search all platforms.",
+  "Toolbar.BulkAdd": "Add multiple games from a folder",
+  "BulkAdd.Title": "Add multiple games",
+  "BulkAdd.PickParent": "Select the folder that contains the game folders",
+  "BulkAdd.NoSubdirectories": "The selected folder has no sub folders to import.",
+  "BulkAdd.Progress": "Game {0} of {1}",
+  "BulkAdd.SkipGame": "Skip this game",
+  "BulkAdd.NoScraperTitle": "No metadata provider configured",
+  "BulkAdd.NoScraperMessage": "No metadata provider is configured, so games will be added without cover art or descriptions. Continue anyway?",
+  "BulkAdd.NoScraperHint": "You can set up a provider in Settings → Metadata provider and refresh the games later.",
+  "BulkAdd.Done": "Bulk import finished: {0} added, {1} skipped.",
+  "Settings.ProviderComparison": "MobyGames gives the best results but requires a paid API plan. IGDB is free and good, but has a more involved setup (a Twitch application). RAWG is free and the easiest to set up, but its results are weaker."
 }

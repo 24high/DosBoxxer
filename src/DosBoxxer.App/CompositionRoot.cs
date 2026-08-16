@@ -58,6 +58,7 @@ public static class CompositionRoot
         // ---- DOSBox -------------------------------------------------------------------
         services.AddSingleton<IExecutableScanner, ExecutableScanner>();
         services.AddSingleton<IDosBoxConfigBuilder, DosBoxConfigBuilder>();
+        services.AddSingleton<IDefaultDosBoxConfig, DefaultDosBoxConfig>();
         services.AddSingleton<IDosBoxLauncher, DosBoxLauncher>();
 
         // ---- metadata -----------------------------------------------------------------

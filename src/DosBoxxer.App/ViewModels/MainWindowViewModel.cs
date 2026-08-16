@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DosBoxxer.App.Services;
 using DosBoxxer.Core.Abstractions;
+using DosBoxxer.Core.Helpers;
 using DosBoxxer.Core.Models;
 using DosBoxxer.Core.Models.Metadata;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IPlatformService _platform;
     private readonly IDialogService _dialogs;
     private readonly IImageLoader _imageLoader;
+    private readonly IGameMetadataProvider _metadataProvider;
     private readonly ILogger<MainWindowViewModel> _logger;
 
     private readonly List<Game> _allGames = new();
@@ -82,6 +84,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IPlatformService platform,
         IDialogService dialogs,
         IImageLoader imageLoader,
+        IGameMetadataProvider metadataProvider,
         ILocalizationService localization,
         ILogger<MainWindowViewModel> logger)
         : base(localization)
@@ -92,6 +95,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _platform = platform;
         _dialogs = dialogs;
         _imageLoader = imageLoader;
+        _metadataProvider = metadataProvider;
         _logger = logger;
 
         Details = new GameDetailsViewModel(imageLoader, localization);
@@ -389,6 +393,88 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusMessage = L("Status.GameAdded", game.Title);
         OnPropertyChanged(nameof(IsLibraryEmpty));
         OnPropertyChanged(nameof(HasGames));
+    }
+
+    /// <summary>
+    /// Bulk import: the user picks a parent folder; every immediate sub directory is treated as a
+    /// game's root and the normal Add-Game wizard is shown for each in turn. Directories already
+    /// in the library are skipped, and if no metadata provider is configured the user is asked to
+    /// confirm before continuing.
+    /// </summary>
+    [RelayCommand]
+    private async Task BulkAddGamesAsync()
+    {
+        var parent = await _dialogs.PickFolderAsync(L("BulkAdd.PickParent")).ConfigureAwait(true);
+        if (parent is null)
+        {
+            return;
+        }
+
+        var directories = BulkAddScanner.GetGameDirectories(parent);
+        if (directories.Count == 0)
+        {
+            await _dialogs.ShowMessageAsync(L("BulkAdd.Title"), L("BulkAdd.NoSubdirectories")).ConfigureAwait(true);
+            return;
+        }
+
+        // Ask before starting if there is no configured scraper — metadata would be skipped for
+        // every game otherwise.
+        if (!_metadataProvider.IsConfigured)
+        {
+            var proceed = await _dialogs
+                .ConfirmAsync(L("BulkAdd.NoScraperTitle"), L("BulkAdd.NoScraperMessage"), L("BulkAdd.NoScraperHint"))
+                .ConfigureAwait(true);
+
+            if (!proceed)
+            {
+                return;
+            }
+        }
+
+        var added = 0;
+        var skipped = 0;
+        var total = directories.Count;
+
+        for (var i = 0; i < total; i++)
+        {
+            var directory = directories[i];
+
+            // Never offer a directory that is already a game in the library.
+            if (_allGames.Any(g => PathHelper.PathComparer.Equals(g.GameDirectory, directory)))
+            {
+                skipped++;
+                continue;
+            }
+
+            var result = await _dialogs
+                .ShowAddGameWizardAsync(new BulkWizardContext { GameDirectory = directory, Index = i + 1, Total = total })
+                .ConfigureAwait(true);
+
+            if (result.Decision == BulkWizardDecision.Aborted)
+            {
+                break;
+            }
+
+            if (result.Decision == BulkWizardDecision.Added && result.Game is not null)
+            {
+                _allGames.Add(result.Game);
+                added++;
+            }
+            else
+            {
+                skipped++;
+            }
+        }
+
+        if (added > 0)
+        {
+            UpdateCategoryCounts();
+            ApplyFilter();
+            OnPropertyChanged(nameof(IsLibraryEmpty));
+            OnPropertyChanged(nameof(HasGames));
+        }
+
+        StatusMessage = L("BulkAdd.Done", added, skipped);
     }
 
     [RelayCommand]

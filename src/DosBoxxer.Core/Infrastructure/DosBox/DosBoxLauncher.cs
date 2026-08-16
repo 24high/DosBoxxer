@@ -18,6 +18,7 @@ public sealed class DosBoxLauncher : IDosBoxLauncher
 {
     private readonly ISettingsService _settings;
     private readonly IDosBoxConfigBuilder _configBuilder;
+    private readonly IDefaultDosBoxConfig _defaultConfig;
     private readonly IAppPaths _paths;
     private readonly ILogger<DosBoxLauncher> _logger;
 
@@ -26,11 +27,13 @@ public sealed class DosBoxLauncher : IDosBoxLauncher
     public DosBoxLauncher(
         ISettingsService settings,
         IDosBoxConfigBuilder configBuilder,
+        IDefaultDosBoxConfig defaultConfig,
         IAppPaths paths,
         ILogger<DosBoxLauncher> logger)
     {
         _settings = settings;
         _configBuilder = configBuilder;
+        _defaultConfig = defaultConfig;
         _paths = paths;
         _logger = logger;
     }
@@ -56,13 +59,35 @@ public sealed class DosBoxLauncher : IDosBoxLauncher
 
         var configPath = Path.Combine(_paths.TempDirectory, $"game-{game.Id:N}.conf");
 
+        // Base configuration: the user's own file when configured (override), otherwise the
+        // built-in default is materialised to disk (in the program directory) and used as the base.
+        string? baseConfigPath;
+        if (!string.IsNullOrWhiteSpace(settings.BaseDosBoxConfigPath) &&
+            PathHelper.FileExistsSafe(settings.BaseDosBoxConfigPath))
+        {
+            baseConfigPath = settings.BaseDosBoxConfigPath;
+        }
+        else
+        {
+            try
+            {
+                baseConfigPath = await _defaultConfig.MaterializeAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Using the built-in default dosbox.conf at {Path}", baseConfigPath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogError(ex, "Could not materialise the default DOSBox configuration");
+                return LaunchResult.Failed(LaunchStatus.ConfigWriteFailed, ex.Message, configPath);
+            }
+        }
+
         DosBoxConfigResult configResult;
         try
         {
             configResult = await _configBuilder.BuildAsync(
                 new DosBoxConfigRequest
                 {
-                    BaseConfigPath = settings.BaseDosBoxConfigPath,
+                    BaseConfigPath = baseConfigPath,
                     GameDirectory = game.GameDirectory,
                     LaunchFile = game.LaunchFile,
                     Overrides = game.DosBoxSettings,

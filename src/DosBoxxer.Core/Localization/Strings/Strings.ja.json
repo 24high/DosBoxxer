@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "DOSBox 実行ファイル",
   "Settings.DosBoxExecutableHint": "例: C:\\Program Files\\DOSBox\\DOSBox.exe または /usr/bin/dosbox。",
   "Settings.BaseConfig": "既定の dosbox.conf",
-  "Settings.BaseConfigHint": "すべてのゲームの基本設定として使われます。DosBoxxer がこのファイルを変更することはありません。",
+  "Settings.BaseConfigHint": "すべてのゲームの基本設定として使われます。DosBoxxer がこのファイルを変更することはありません。空欄にすると内蔵の既定設定（ゲームを全画面で起動し、アスペクト比を保ったまま拡大）を使用し、初回起動時にプログラムフォルダーへ書き込まれます。",
   "Settings.AdditionalArguments": "追加の DOSBox 引数",
   "Settings.AdditionalArgumentsHint": "個別の引数として DOSBox に渡されます。シェルは使用しません。",
   "Settings.CloseAfterExit": "ゲーム終了時に DOSBox を閉じる",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "RAWG は rawg.io に登録するとすぐに無料の API キーを発行します。RAWG は DOS 時代のゲームのカバー率が低く、カバー画像も現代的なものが多い点に注意してください。",
   "Settings.RawgApiKey": "API キー",
   "Settings.RawgPlatformId": "プラットフォーム ID（任意）",
-  "Settings.RawgPlatformIdHint": "RAWG には専用の DOS プラットフォームがありません。空欄にするとすべてのプラットフォームを検索します。"
+  "Settings.RawgPlatformIdHint": "RAWG には専用の DOS プラットフォームがありません。空欄にするとすべてのプラットフォームを検索します。",
+  "Toolbar.BulkAdd": "フォルダーから複数のゲームを追加",
+  "BulkAdd.Title": "複数のゲームを追加",
+  "BulkAdd.PickParent": "各ゲームのフォルダーを含む親フォルダーを選択",
+  "BulkAdd.NoSubdirectories": "選択したフォルダーにはインポートできるサブフォルダーがありません。",
+  "BulkAdd.Progress": "ゲーム {0} / {1}",
+  "BulkAdd.SkipGame": "このゲームをスキップ",
+  "BulkAdd.NoScraperTitle": "メタデータ提供元が未設定です",
+  "BulkAdd.NoScraperMessage": "メタデータ提供元が設定されていないため、ゲームはカバー画像や説明なしで追加されます。それでも続行しますか？",
+  "BulkAdd.NoScraperHint": "「設定 → メタデータ提供元」で提供元を設定し、あとでゲームを更新できます。",
+  "BulkAdd.Done": "一括インポート完了: {0} 件追加、{1} 件スキップ。",
+  "Settings.ProviderComparison": "MobyGames は最良の結果を得られますが、有料の API プランが必要です。IGDB は無料で良好ですが、設定がやや手間です（Twitch アプリの作成）。RAWG は無料で最も簡単に設定できますが、結果は劣ります。"
 }

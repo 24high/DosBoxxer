@@ -126,6 +126,12 @@
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2" Margin="0,0,8,0">
               <Button Classes="icon"
+                      Command="{Binding BulkAddGamesCommand}"
+                      ToolTip.Tip="{loc:Localize Toolbar.BulkAdd}"
+                      AutomationProperties.Name="{loc:Localize Toolbar.BulkAdd}">
+                <PathIcon Data="{StaticResource IconBulkAdd}" />
+              </Button>
+              <Button Classes="icon"
                       Command="{Binding LoadLibraryCommand}"
                       ToolTip.Tip="{loc:Localize Toolbar.Refresh}"
                       AutomationProperties.Name="{loc:Localize Toolbar.Refresh}">

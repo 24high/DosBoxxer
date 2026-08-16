@@ -61,12 +61,15 @@ public sealed class DosBoxLauncherTests
 
     private static (DosBoxLauncher Launcher, StubSettings Settings, AppPaths Paths) CreateLauncher(TempDirectory temp)
     {
-        var paths = new AppPaths(Path.Combine(temp.Path, "appdata"));
+        // Program directory points at a writable temp folder so the default config materialises there.
+        var paths = new AppPaths(Path.Combine(temp.Path, "appdata"), Path.Combine(temp.Path, "program"));
         paths.EnsureCreated();
+        Directory.CreateDirectory(paths.ProgramDirectory);
 
         var settings = new StubSettings();
         var builder = new DosBoxConfigBuilder(NullLogger<DosBoxConfigBuilder>.Instance);
-        var launcher = new DosBoxLauncher(settings, builder, paths, NullLogger<DosBoxLauncher>.Instance);
+        var defaultConfig = new DefaultDosBoxConfig(paths, NullLogger<DefaultDosBoxConfig>.Instance);
+        var launcher = new DosBoxLauncher(settings, builder, defaultConfig, paths, NullLogger<DosBoxLauncher>.Instance);
 
         return (launcher, settings, paths);
     }
@@ -137,6 +140,30 @@ public sealed class DosBoxLauncherTests
         Assert.Equal("-noconsole", recorded[2]);
         Assert.Equal("; touch /tmp/pwned", recorded[3]);
         Assert.False(File.Exists("/tmp/pwned"));
+    }
+
+    [Fact]
+    public async Task Launch_UsesTheEmbeddedDefaultWhenNoBaseConfigIsConfigured()
+    {
+        using var temp = new TempDirectory();
+        var (launcher, settings, paths) = CreateLauncher(temp);
+
+        settings.Current.DosBoxExecutablePath = CreateFakeDosBox(temp);
+        settings.Current.BaseDosBoxConfigPath = null; // no override → embedded default
+
+        var game = CreateGame(temp, "DOOM.EXE");
+        var result = await launcher.LaunchAsync(game);
+
+        Assert.True(result.Success, result.ErrorDetail);
+
+        // The default was materialised into the program directory, and the generated per-game
+        // config inherits its fullscreen/aspect settings.
+        Assert.True(File.Exists(Path.Combine(paths.ProgramDirectory, "dosbox.conf")));
+
+        var config = await File.ReadAllTextAsync(result.ConfigFilePath!);
+        Assert.Contains("fullscreen=true", config);
+        Assert.Contains("aspect=true", config);
+        Assert.Contains("mount c", config);
     }
 
     [Fact]

@@ -131,6 +131,19 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     [ObservableProperty]
     private bool _metadataSkipped;
 
+    // -- batch import state ---------------------------------------------------------------
+    [ObservableProperty]
+    private bool _isBatchMode;
+
+    [ObservableProperty]
+    private int _batchIndex;
+
+    [ObservableProperty]
+    private int _batchTotal;
+
+    /// <summary>Outcome read by the dialog layer after the window closes.</summary>
+    public BulkWizardDecision BatchDecision { get; private set; } = BulkWizardDecision.Skipped;
+
     public AddGameWizardViewModel(
         IExecutableScanner scanner,
         IGameMetadataProvider metadataProvider,
@@ -190,6 +203,9 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     public bool ShowNoResults => !IsSearching && CurrentStep == 3 && SearchResults.Count == 0 && _searchAttempted;
 
     public bool IsMetadataProviderConfigured => _metadataProvider.IsConfigured;
+
+    /// <summary>Progress banner shown while importing a batch, e.g. "Game 2 of 5".</summary>
+    public string BatchProgressText => IsBatchMode ? L("BulkAdd.Progress", BatchIndex, BatchTotal) : string.Empty;
 
     public bool HasValidationMessage => !string.IsNullOrEmpty(ValidationMessage);
 
@@ -402,6 +418,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
 
             CreatedGame = await _library.AddGameAsync(request, progress).ConfigureAwait(true);
 
+            BatchDecision = BulkWizardDecision.Added;
             CloseRequested?.Invoke(this, true);
         }
         catch (Exception ex)
@@ -416,8 +433,39 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Batch only: skip this game and continue the import with the next directory.</summary>
     [RelayCommand]
-    private void Cancel() => CloseRequested?.Invoke(this, false);
+    private void SkipGame()
+    {
+        BatchDecision = BulkWizardDecision.Skipped;
+        CloseRequested?.Invoke(this, false);
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        // In a batch, cancelling stops the whole import; otherwise it just closes the wizard.
+        BatchDecision = IsBatchMode ? BulkWizardDecision.Aborted : BulkWizardDecision.Skipped;
+        CloseRequested?.Invoke(this, false);
+    }
+
+    /// <summary>
+    /// Prepares the wizard as one step of a bulk import: pre-seeds the folder, jumps straight to
+    /// the executable selection and starts scanning. Called by the dialog layer before the window
+    /// is shown.
+    /// </summary>
+    public async Task BeginBatchAsync(BulkWizardContext context)
+    {
+        IsBatchMode = true;
+        BatchIndex = context.Index;
+        BatchTotal = context.Total;
+        GameFolder = context.GameDirectory;
+
+        OnPropertyChanged(nameof(BatchProgressText));
+
+        CurrentStep = 2;
+        await ScanAsync().ConfigureAwait(true);
+    }
 
     // ---- helpers --------------------------------------------------------------------------
 

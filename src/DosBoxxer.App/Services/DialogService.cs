@@ -222,6 +222,26 @@ public sealed class DialogService : IDialogService
         return game;
     }
 
+    public async Task<BulkWizardResult> ShowAddGameWizardAsync(BulkWizardContext context)
+    {
+        var viewModel = ActivatorUtilities.CreateInstance<AddGameWizardViewModel>(_services);
+        var window = new AddGameWizardWindow { DataContext = viewModel };
+
+        // Pre-seed the folder and kick off the scan before the window is shown.
+        await viewModel.BeginBatchAsync(context).ConfigureAwait(true);
+
+        await ShowWindowAsync(window, viewModel).ConfigureAwait(true);
+
+        var result = new BulkWizardResult
+        {
+            Decision = viewModel.BatchDecision,
+            Game = viewModel.BatchDecision == BulkWizardDecision.Added ? viewModel.CreatedGame : null,
+        };
+
+        viewModel.Dispose();
+        return result;
+    }
+
     public async Task<bool> ShowEditGameAsync(Game game)
     {
         var viewModel = ActivatorUtilities.CreateInstance<EditGameViewModel>(_services, game);

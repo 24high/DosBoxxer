@@ -44,7 +44,12 @@ public sealed class RawgClient : IMediaHttpClient, IDisposable
     public const string HttpClientName = "rawg";
     public const string BaseAddress = "https://api.rawg.io/api/";
 
+    // RAWG's free key is quota-limited per month rather than per second; a conservative 1.1s
+    // spacing plus a rolling hourly cap keeps well within fair use, and a real 429 is still
+    // handled with backoff. (A hard monthly cap cannot be enforced by spacing alone; the server
+    // returns 429 when the monthly quota is exhausted.)
     private static readonly TimeSpan MinimumRequestInterval = TimeSpan.FromMilliseconds(1100);
+    private const int MaxRequestsPerHour = 1000;
     private const int MaxAttempts = 3;
     private const long MaxMediaBytes = 20 * 1024 * 1024;
 
@@ -57,9 +62,8 @@ public sealed class RawgClient : IMediaHttpClient, IDisposable
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<RawgClient> _logger;
-    private readonly SemaphoreSlim _throttle = new(1, 1);
-
-    private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
+    private readonly RateLimiter _rateLimiter =
+        new(MinimumRequestInterval, MaxRequestsPerHour, TimeSpan.FromHours(1));
 
     public RawgClient(IHttpClientFactory httpClientFactory, ILogger<RawgClient> logger)
     {
@@ -113,7 +117,7 @@ public sealed class RawgClient : IMediaHttpClient, IDisposable
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await ThrottleAsync(cancellationToken).ConfigureAwait(false);
+            await _rateLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("RAWG request {Endpoint} (attempt {Attempt}/{Max})", endpoint, attempt, MaxAttempts);
 
@@ -299,25 +303,6 @@ public sealed class RawgClient : IMediaHttpClient, IDisposable
         }
     }
 
-    private async Task ThrottleAsync(CancellationToken cancellationToken)
-    {
-        await _throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var elapsed = DateTimeOffset.UtcNow - _lastRequest;
-            if (elapsed < MinimumRequestInterval)
-            {
-                await Task.Delay(MinimumRequestInterval - elapsed, cancellationToken).ConfigureAwait(false);
-            }
-
-            _lastRequest = DateTimeOffset.UtcNow;
-        }
-        finally
-        {
-            _throttle.Release();
-        }
-    }
-
     private static Task BackoffAsync(int attempt, CancellationToken cancellationToken, TimeSpan? retryAfter = null)
     {
         var delay = retryAfter ?? TimeSpan.FromSeconds(Math.Pow(2, attempt));
@@ -329,5 +314,5 @@ public sealed class RawgClient : IMediaHttpClient, IDisposable
         return Task.Delay(delay, cancellationToken);
     }
 
-    public void Dispose() => _throttle.Dispose();
+    public void Dispose() => _rateLimiter.Dispose();
 }

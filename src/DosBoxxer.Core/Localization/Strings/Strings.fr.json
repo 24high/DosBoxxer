@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "Exécutable DOSBox",
   "Settings.DosBoxExecutableHint": "Par exemple C:\\Program Files\\DOSBox\\DOSBox.exe ou /usr/bin/dosbox.",
   "Settings.BaseConfig": "dosbox.conf par défaut",
-  "Settings.BaseConfigHint": "Sert de base pour chaque jeu. DosBoxxer ne modifie jamais ce fichier.",
+  "Settings.BaseConfigHint": "Sert de base pour chaque jeu. DosBoxxer ne modifie jamais ce fichier. Laissez vide pour utiliser la configuration par défaut intégrée (démarre les jeux en plein écran, mis à l'échelle en conservant le rapport d'image), écrite dans le dossier du programme au premier lancement.",
   "Settings.AdditionalArguments": "Arguments DOSBox supplémentaires",
   "Settings.AdditionalArgumentsHint": "Transmis à DOSBox comme arguments distincts. Aucun interpréteur de commandes n’est utilisé.",
   "Settings.CloseAfterExit": "Fermer DOSBox à la fin du jeu",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "RAWG fournit une clé API gratuite dès l’inscription sur rawg.io. Notez que la couverture des jeux DOS par RAWG est plus limitée et ses jaquettes souvent modernes.",
   "Settings.RawgApiKey": "Clé API",
   "Settings.RawgPlatformId": "ID de plate-forme (facultatif)",
-  "Settings.RawgPlatformIdHint": "RAWG n’a pas de plate-forme DOS dédiée ; laissez vide pour chercher sur toutes les plates-formes."
+  "Settings.RawgPlatformIdHint": "RAWG n’a pas de plate-forme DOS dédiée ; laissez vide pour chercher sur toutes les plates-formes.",
+  "Toolbar.BulkAdd": "Ajouter plusieurs jeux depuis un dossier",
+  "BulkAdd.Title": "Ajouter plusieurs jeux",
+  "BulkAdd.PickParent": "Sélectionnez le dossier qui contient les dossiers de jeux",
+  "BulkAdd.NoSubdirectories": "Le dossier sélectionné n’a aucun sous-dossier à importer.",
+  "BulkAdd.Progress": "Jeu {0} sur {1}",
+  "BulkAdd.SkipGame": "Ignorer ce jeu",
+  "BulkAdd.NoScraperTitle": "Aucun fournisseur de métadonnées configuré",
+  "BulkAdd.NoScraperMessage": "Aucun fournisseur de métadonnées n’est configuré ; les jeux seront ajoutés sans jaquette ni description. Continuer quand même ?",
+  "BulkAdd.NoScraperHint": "Vous pouvez configurer un fournisseur dans Paramètres → Fournisseur de métadonnées et actualiser les jeux plus tard.",
+  "BulkAdd.Done": "Import groupé terminé : {0} ajouté(s), {1} ignoré(s).",
+  "Settings.ProviderComparison": "MobyGames donne les meilleurs résultats mais nécessite un accès API payant. IGDB est gratuit et bon, mais sa configuration est plus complexe (une application Twitch). RAWG est gratuit et le plus simple à configurer, mais ses résultats sont plus faibles."
 }

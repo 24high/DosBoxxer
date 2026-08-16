@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "DOSBox एक्ज़ीक्यूटेबल",
   "Settings.DosBoxExecutableHint": "उदाहरण: C:\\Program Files\\DOSBox\\DOSBox.exe या /usr/bin/dosbox।",
   "Settings.BaseConfig": "डिफ़ॉल्ट dosbox.conf",
-  "Settings.BaseConfigHint": "हर गेम के लिए आधार के रूप में उपयोग होती है। DosBoxxer इस फ़ाइल को कभी नहीं बदलता।",
+  "Settings.BaseConfigHint": "हर गेम के लिए आधार के रूप में उपयोग होती है। DosBoxxer इस फ़ाइल को कभी नहीं बदलता। अंतर्निहित डिफ़ॉल्ट कॉन्फ़िगरेशन उपयोग करने के लिए खाली छोड़ें (गेम को पूर्ण स्क्रीन में, अनुपात बनाए रखते हुए स्केल करके शुरू करता है); यह पहली बार शुरू होने पर प्रोग्राम फ़ोल्डर में लिखी जाती है।",
   "Settings.AdditionalArguments": "अतिरिक्त DOSBox आर्ग्युमेंट",
   "Settings.AdditionalArgumentsHint": "DOSBox को अलग-अलग आर्ग्युमेंट के रूप में दिए जाते हैं। कोई शेल उपयोग नहीं होता।",
   "Settings.CloseAfterExit": "गेम समाप्त होने पर DOSBox बंद करें",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "rawg.io पर साइन अप करते ही RAWG तुरंत मुफ़्त API कुंजी देता है। ध्यान दें कि RAWG में DOS-युग के खेलों का कवरेज कम है और कवर अक्सर आधुनिक होते हैं।",
   "Settings.RawgApiKey": "API कुंजी",
   "Settings.RawgPlatformId": "प्लेटफ़ॉर्म ID (वैकल्पिक)",
-  "Settings.RawgPlatformIdHint": "RAWG में कोई समर्पित DOS प्लेटफ़ॉर्म नहीं है; सभी प्लेटफ़ॉर्म खोजने के लिए खाली छोड़ें।"
+  "Settings.RawgPlatformIdHint": "RAWG में कोई समर्पित DOS प्लेटफ़ॉर्म नहीं है; सभी प्लेटफ़ॉर्म खोजने के लिए खाली छोड़ें।",
+  "Toolbar.BulkAdd": "किसी फ़ोल्डर से कई गेम जोड़ें",
+  "BulkAdd.Title": "कई गेम जोड़ें",
+  "BulkAdd.PickParent": "वह फ़ोल्डर चुनें जिसमें गेम फ़ोल्डर हैं",
+  "BulkAdd.NoSubdirectories": "चयनित फ़ोल्डर में आयात करने योग्य कोई उपफ़ोल्डर नहीं है।",
+  "BulkAdd.Progress": "गेम {0} / {1}",
+  "BulkAdd.SkipGame": "यह गेम छोड़ें",
+  "BulkAdd.NoScraperTitle": "कोई मेटाडेटा प्रदाता कॉन्फ़िगर नहीं है",
+  "BulkAdd.NoScraperMessage": "कोई मेटाडेटा प्रदाता कॉन्फ़िगर नहीं है, इसलिए गेम कवर और विवरण के बिना जोड़े जाएँगे। फिर भी जारी रखें?",
+  "BulkAdd.NoScraperHint": "आप सेटिंग्स → मेटाडेटा प्रदाता में प्रदाता सेट कर सकते हैं और बाद में गेम ताज़ा कर सकते हैं।",
+  "BulkAdd.Done": "बल्क आयात पूर्ण: {0} जोड़े गए, {1} छोड़े गए।",
+  "Settings.ProviderComparison": "MobyGames सर्वोत्तम परिणाम देता है पर इसके लिए सशुल्क API योजना चाहिए। IGDB मुफ़्त और अच्छा है, पर इसका सेटअप अधिक जटिल है (एक Twitch ऐप्लिकेशन)। RAWG मुफ़्त और सेट करना सबसे आसान है, पर इसके परिणाम कमज़ोर हैं।"
 }

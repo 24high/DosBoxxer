@@ -24,6 +24,11 @@
       <WithCulture>false</WithCulture>
       <LogicalName>DosBoxxer.Core.Localization.Strings.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
+
+    <!-- The built-in default dosbox.conf, materialised to disk on game start. -->
+    <EmbeddedResource Include="Assets/dosbox-default.conf">
+      <LogicalName>DosBoxxer.Core.Assets.dosbox-default.conf</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

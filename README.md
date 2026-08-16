@@ -400,7 +400,7 @@ To add a language:
 dotnet test
 ```
 
-237 tests, none of which require any provider account, a network connection or an installed
+250 tests, none of which require any provider account, a network connection or an installed
 DOSBox. Coverage includes:
 
 - Recursive `.exe` / `.bat` / `.com` discovery, installer ranking
@@ -417,6 +417,9 @@ DOSBox. Coverage includes:
   strings, HTML descriptions, Unix-timestamp dates) and rejection of media URLs from foreign hosts
 - Provider selection: the `ActiveMetadataProvider` routes to the configured provider and the
   `CompositeMediaHttpClient` routes each media URL to the provider that owns its host
+- Rate limiting: the shared `RateLimiter` enforces both minimum spacing and a rolling-window
+  request cap (verified with a virtual clock), and serialises concurrent callers
+- Bulk import: directory enumeration (immediate sub folders, hidden skipped, sorted)
 - Settings serialization, secret encryption at rest, data-directory creation
 - Repository round-trips, cascade deletes, play-session accumulation, restart persistence
 - Translation completeness across all nine languages

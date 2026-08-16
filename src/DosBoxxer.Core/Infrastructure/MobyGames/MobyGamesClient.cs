@@ -50,8 +50,10 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
     public const string HttpClientName = "mobygames";
     public const string BaseAddress = "https://api.mobygames.com/v1/";
 
-    /// <summary>MobyGames documents one request every ten seconds; stay just above that.</summary>
+    // MobyGames documents 360 requests per hour, one every ten seconds and never more than one
+    // per second. The rate limiter enforces both the 10.5s spacing and the 360/hour window.
     private static readonly TimeSpan MinimumRequestInterval = TimeSpan.FromMilliseconds(10_500);
+    private const int MaxRequestsPerHour = 360;
     private const int MaxAttempts = 3;
     private const long MaxMediaBytes = 20 * 1024 * 1024;
 
@@ -64,9 +66,8 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MobyGamesClient> _logger;
-    private readonly SemaphoreSlim _throttle = new(1, 1);
-
-    private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
+    private readonly RateLimiter _rateLimiter =
+        new(MinimumRequestInterval, MaxRequestsPerHour, TimeSpan.FromHours(1));
 
     public MobyGamesClient(IHttpClientFactory httpClientFactory, ILogger<MobyGamesClient> logger)
     {
@@ -134,7 +135,7 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await ThrottleAsync(cancellationToken).ConfigureAwait(false);
+            await _rateLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("MobyGames request {Endpoint} (attempt {Attempt}/{Max})", endpoint, attempt, MaxAttempts);
 
@@ -243,7 +244,7 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
         }
 
         var client = _httpClientFactory.CreateClient(HttpClientName);
-        await ThrottleAsync(cancellationToken).ConfigureAwait(false);
+        await _rateLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         using var response = await client
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -332,25 +333,6 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
         }
     }
 
-    private async Task ThrottleAsync(CancellationToken cancellationToken)
-    {
-        await _throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var elapsed = DateTimeOffset.UtcNow - _lastRequest;
-            if (elapsed < MinimumRequestInterval)
-            {
-                await Task.Delay(MinimumRequestInterval - elapsed, cancellationToken).ConfigureAwait(false);
-            }
-
-            _lastRequest = DateTimeOffset.UtcNow;
-        }
-        finally
-        {
-            _throttle.Release();
-        }
-    }
-
     private static Task BackoffAsync(int attempt, CancellationToken cancellationToken, TimeSpan? retryAfter = null)
     {
         var delay = retryAfter ?? TimeSpan.FromSeconds(Math.Pow(2, attempt) * 5);
@@ -362,5 +344,5 @@ public sealed class MobyGamesClient : IMediaHttpClient, IDisposable
         return Task.Delay(delay, cancellationToken);
     }
 
-    public void Dispose() => _throttle.Dispose();
+    public void Dispose() => _rateLimiter.Dispose();
 }

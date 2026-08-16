@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "DOSBox-Programmdatei",
   "Settings.DosBoxExecutableHint": "Zum Beispiel C:\\Programme\\DOSBox\\DOSBox.exe oder /usr/bin/dosbox.",
   "Settings.BaseConfig": "Standard-dosbox.conf",
-  "Settings.BaseConfigHint": "Dient als Basis für jedes Spiel. DosBoxxer verändert diese Datei niemals.",
+  "Settings.BaseConfigHint": "Dient als Basis für jedes Spiel. DosBoxxer verändert diese Datei niemals. Leer lassen, um die eingebaute Standard-Config zu nutzen (startet Spiele im Vollbild, skaliert unter Beibehaltung des Seitenverhältnisses); sie wird beim ersten Start in den Programmordner geschrieben.",
   "Settings.AdditionalArguments": "Zusätzliche DOSBox-Argumente",
   "Settings.AdditionalArgumentsHint": "Werden DOSBox als einzelne Argumente übergeben. Es wird keine Shell verwendet.",
   "Settings.CloseAfterExit": "DOSBox schließen, wenn das Spiel endet",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "RAWG vergibt bei der Anmeldung auf rawg.io sofort einen kostenlosen API-Key. Beachte: RAWGs Abdeckung von DOS-Ära-Spielen ist dünner und die Cover sind oft modern.",
   "Settings.RawgApiKey": "API-Key",
   "Settings.RawgPlatformId": "Plattform-ID (optional)",
-  "Settings.RawgPlatformIdHint": "RAWG hat keine eigene DOS-Plattform – leer lassen, um alle Plattformen zu durchsuchen."
+  "Settings.RawgPlatformIdHint": "RAWG hat keine eigene DOS-Plattform – leer lassen, um alle Plattformen zu durchsuchen.",
+  "Toolbar.BulkAdd": "Mehrere Spiele aus einem Ordner hinzufügen",
+  "BulkAdd.Title": "Mehrere Spiele hinzufügen",
+  "BulkAdd.PickParent": "Wähle den Ordner, der die Spieleordner enthält",
+  "BulkAdd.NoSubdirectories": "Der gewählte Ordner enthält keine Unterordner zum Importieren.",
+  "BulkAdd.Progress": "Spiel {0} von {1}",
+  "BulkAdd.SkipGame": "Dieses Spiel überspringen",
+  "BulkAdd.NoScraperTitle": "Kein Metadaten-Anbieter konfiguriert",
+  "BulkAdd.NoScraperMessage": "Es ist kein Metadaten-Anbieter konfiguriert – Spiele werden ohne Cover und Beschreibung hinzugefügt. Trotzdem fortfahren?",
+  "BulkAdd.NoScraperHint": "Du kannst einen Anbieter unter Einstellungen → Metadaten-Anbieter einrichten und die Spiele später aktualisieren.",
+  "BulkAdd.Done": "Sammel-Import abgeschlossen: {0} hinzugefügt, {1} übersprungen.",
+  "Settings.ProviderComparison": "MobyGames liefert die besten Ergebnisse, ist aber kostenpflichtig (bezahlter API-Zugang). IGDB ist kostenlos und gut, erfordert aber ein aufwändigeres Setup (eine Twitch-Anwendung). RAWG ist kostenlos und am einfachsten einzurichten, liefert aber schlechtere Ergebnisse."
 }

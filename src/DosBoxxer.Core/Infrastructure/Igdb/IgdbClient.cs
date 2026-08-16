@@ -51,7 +51,10 @@ public sealed class IgdbClient : IMediaHttpClient, IDisposable
     public const string TokenEndpoint = "https://id.twitch.tv/oauth2/token";
     public const string ImageBaseAddress = "https://images.igdb.com/igdb/image/upload/";
 
-    private static readonly TimeSpan MinimumRequestInterval = TimeSpan.FromMilliseconds(300);
+    // IGDB documents four requests per second. The limiter enforces a 250ms minimum spacing and
+    // a hard cap of four requests within any rolling one-second window.
+    private static readonly TimeSpan MinimumRequestInterval = TimeSpan.FromMilliseconds(250);
+    private const int MaxRequestsPerSecond = 4;
     private const int MaxAttempts = 3;
     private const long MaxMediaBytes = 20 * 1024 * 1024;
 
@@ -64,10 +67,9 @@ public sealed class IgdbClient : IMediaHttpClient, IDisposable
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<IgdbClient> _logger;
-    private readonly SemaphoreSlim _throttle = new(1, 1);
+    private readonly RateLimiter _rateLimiter =
+        new(MinimumRequestInterval, MaxRequestsPerSecond, TimeSpan.FromSeconds(1));
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
-
-    private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
     private string? _cachedToken;
     private string? _cachedTokenClientId;
     private DateTimeOffset _tokenExpiry = DateTimeOffset.MinValue;
@@ -124,7 +126,7 @@ public sealed class IgdbClient : IMediaHttpClient, IDisposable
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await ThrottleAsync(cancellationToken).ConfigureAwait(false);
+            await _rateLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("IGDB request (attempt {Attempt}/{Max})", attempt, MaxAttempts);
 
@@ -350,25 +352,6 @@ public sealed class IgdbClient : IMediaHttpClient, IDisposable
         return true;
     }
 
-    private async Task ThrottleAsync(CancellationToken cancellationToken)
-    {
-        await _throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var elapsed = DateTimeOffset.UtcNow - _lastRequest;
-            if (elapsed < MinimumRequestInterval)
-            {
-                await Task.Delay(MinimumRequestInterval - elapsed, cancellationToken).ConfigureAwait(false);
-            }
-
-            _lastRequest = DateTimeOffset.UtcNow;
-        }
-        finally
-        {
-            _throttle.Release();
-        }
-    }
-
     private static Task BackoffAsync(int attempt, CancellationToken cancellationToken, TimeSpan? retryAfter = null)
     {
         var delay = retryAfter ?? TimeSpan.FromSeconds(Math.Pow(2, attempt));
@@ -385,7 +368,7 @@ public sealed class IgdbClient : IMediaHttpClient, IDisposable
 
     public void Dispose()
     {
-        _throttle.Dispose();
+        _rateLimiter.Dispose();
         _tokenLock.Dispose();
     }
 }

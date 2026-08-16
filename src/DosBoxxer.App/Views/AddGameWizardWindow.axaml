@@ -13,7 +13,12 @@
     <!-- Header -->
     <Border Grid.Row="0" Classes="panel" BorderThickness="0,0,0,1" Padding="26,18">
       <StackPanel Spacing="4">
-        <TextBlock Classes="tertiary" Text="{Binding StepIndicator}" />
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding StepIndicator}" />
+          <Border Grid.Column="1" Classes="chip" IsVisible="{Binding IsBatchMode}">
+            <TextBlock Text="{Binding BatchProgressText}" />
+          </Border>
+        </Grid>
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step1Title}" IsVisible="{Binding IsStep1}" />
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step2Title}" IsVisible="{Binding IsStep2}" />
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step3Title}" IsVisible="{Binding IsStep3}" />
@@ -187,30 +192,37 @@
 
     <!-- Footer -->
     <Border Grid.Row="2" Classes="panel" BorderThickness="0,1,0,0" Padding="26,14">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
         <Button Grid.Column="0"
                 Content="{loc:Localize Common.Cancel}"
                 Command="{Binding CancelCommand}" />
 
-        <Button Grid.Column="2"
+        <!-- Batch only: skip this game and continue with the next directory. -->
+        <Button Grid.Column="1"
+                Margin="8,0,0,0"
+                Content="{loc:Localize BulkAdd.SkipGame}"
+                Command="{Binding SkipGameCommand}"
+                IsVisible="{Binding IsBatchMode}" />
+
+        <Button Grid.Column="3"
                 Margin="0,0,8,0"
                 Content="{loc:Localize Common.Back}"
                 Command="{Binding BackCommand}"
                 IsEnabled="{Binding CanGoBack}" />
 
-        <Button Grid.Column="3"
+        <Button Grid.Column="4"
                 Margin="0,0,8,0"
                 Content="{loc:Localize Wizard.SkipMetadata}"
                 Command="{Binding SkipMetadataCommand}"
                 IsVisible="{Binding ShowSkipMetadata}" />
 
-        <Button Grid.Column="4"
+        <Button Grid.Column="5"
                 Classes="primary"
                 Content="{loc:Localize Common.Next}"
                 Command="{Binding NextCommand}"
                 IsVisible="{Binding ShowNext}" />
 
-        <Button Grid.Column="4"
+        <Button Grid.Column="5"
                 Classes="primary"
                 Content="{loc:Localize Wizard.AddGame}"
                 Command="{Binding FinishCommand}"

@@ -9,6 +9,9 @@ public interface IAppPaths
     /// <summary>Root user data directory, e.g. <c>%APPDATA%\DosBoxxer</c> or <c>~/.local/share/DosBoxxer</c>.</summary>
     string DataRoot { get; }
 
+    /// <summary>Directory the application runs from (where the executable lives).</summary>
+    string ProgramDirectory { get; }
+
     string DatabaseDirectory { get; }
 
     string DatabaseFile { get; }

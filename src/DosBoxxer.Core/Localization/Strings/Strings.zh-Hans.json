@@ -204,7 +204,7 @@
   "Settings.DosBoxExecutable": "DOSBox 可执行文件",
   "Settings.DosBoxExecutableHint": "例如 C:\\Program Files\\DOSBox\\DOSBox.exe 或 /usr/bin/dosbox。",
   "Settings.BaseConfig": "默认 dosbox.conf",
-  "Settings.BaseConfigHint": "作为所有游戏的基础配置。DosBoxxer 绝不会修改该文件。",
+  "Settings.BaseConfigHint": "作为每个游戏的基础配置。DosBoxxer 绝不会修改该文件。留空则使用内置默认配置（以全屏启动游戏，按比例缩放并保持宽高比），首次启动时写入程序文件夹。",
   "Settings.AdditionalArguments": "附加的 DOSBox 参数",
   "Settings.AdditionalArgumentsHint": "作为独立参数传递给 DOSBox，不经过任何 shell。",
   "Settings.CloseAfterExit": "游戏结束时关闭 DOSBox",
@@ -323,5 +323,16 @@
   "Settings.RawgHint": "在 rawg.io 注册后即可立即获得免费 API 密钥。请注意 RAWG 对 DOS 时代游戏的覆盖较少，封面也多为现代版本。",
   "Settings.RawgApiKey": "API 密钥",
   "Settings.RawgPlatformId": "平台 ID（可选）",
-  "Settings.RawgPlatformIdHint": "RAWG 没有专门的 DOS 平台；留空以搜索所有平台。"
+  "Settings.RawgPlatformIdHint": "RAWG 没有专门的 DOS 平台；留空以搜索所有平台。",
+  "Toolbar.BulkAdd": "从文件夹批量添加游戏",
+  "BulkAdd.Title": "批量添加游戏",
+  "BulkAdd.PickParent": "选择包含各游戏文件夹的父文件夹",
+  "BulkAdd.NoSubdirectories": "所选文件夹没有可导入的子文件夹。",
+  "BulkAdd.Progress": "第 {0} 个游戏，共 {1} 个",
+  "BulkAdd.SkipGame": "跳过此游戏",
+  "BulkAdd.NoScraperTitle": "未配置元数据提供方",
+  "BulkAdd.NoScraperMessage": "尚未配置元数据提供方，游戏将不带封面和简介添加。仍要继续吗？",
+  "BulkAdd.NoScraperHint": "你可以在“设置 → 元数据提供方”中配置提供方，稍后再刷新这些游戏。",
+  "BulkAdd.Done": "批量导入完成：已添加 {0} 个，跳过 {1} 个。",
+  "Settings.ProviderComparison": "MobyGames 结果最好，但需要付费 API 方案。IGDB 免费且不错，但配置较繁琐（需创建 Twitch 应用）。RAWG 免费且最易配置，但结果较差。"
 }
