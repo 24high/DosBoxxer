@@ -1,3 +1,5 @@
+using DosBoxxer.Core.Models.Savegame;
+
 namespace DosBoxxer.Core.Models;
 
 /// <summary>
@@ -77,6 +79,13 @@ public sealed class Game
     /// <summary>Per-game DOSBox overrides. Never <c>null</c>; an empty instance means "use base config".</summary>
     public GameDosBoxSettings DosBoxSettings { get; set; } = new();
 
+    /// <summary>
+    /// Per-game savegame / cloud-save configuration. Never <c>null</c>; a non-configured instance
+    /// (<see cref="SavegameConfig.IsConfigured"/> is <c>false</c>) means "Savegames not configured"
+    /// and disables all auto-sync for this game.
+    /// </summary>
+    public SavegameConfig SavegameConfig { get; set; } = new();
+
     public Game Clone()
     {
         var clone = new Game
@@ -105,6 +114,7 @@ public sealed class Game
             IsFavorite = IsFavorite,
             ManualFields = ManualFields,
             DosBoxSettings = DosBoxSettings.Clone(),
+            SavegameConfig = SavegameConfig.Clone(),
         };
         clone.Genres.AddRange(Genres);
         clone.Screenshots.AddRange(Screenshots.Select(s => s.Clone()));

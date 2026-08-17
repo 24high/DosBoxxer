@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Models;
+using DosBoxxer.Core.Models.Cloud;
 using DosBoxxer.Core.Models.Metadata;
 
 namespace DosBoxxer.App.Services;
@@ -92,4 +94,13 @@ public interface IDialogService
 
     /// <summary>Lets the user pick the matching entry from a provider search result list.</summary>
     Task<MetadataSearchResult?> ShowMetadataSearchAsync(string initialSearchTerm);
+
+    /// <summary>
+    /// Shows a dialog with several labelled choices and returns the chosen index, or -1 when the
+    /// user cancelled. <paramref name="primaryIndex"/> is highlighted as the default action.
+    /// </summary>
+    Task<int> ShowChoiceAsync(string title, string message, IReadOnlyList<string> options, int primaryIndex = 0, bool isError = false);
+
+    /// <summary>Lets the user resolve savegame sync conflicts. Returns <c>null</c> when cancelled.</summary>
+    Task<ConflictDecision?> ShowSyncConflictAsync(IReadOnlyList<SyncPlanItem> conflicts);
 }

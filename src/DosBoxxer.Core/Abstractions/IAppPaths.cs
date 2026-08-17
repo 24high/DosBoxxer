@@ -28,6 +28,12 @@ public interface IAppPaths
 
     string LogsDirectory { get; }
 
+    /// <summary>Directory holding per-game cloud sync metadata JSON files.</summary>
+    string SyncMetadataDirectory { get; }
+
+    /// <summary>Directory holding pre-overwrite savegame backups.</summary>
+    string SavegameBackupDirectory { get; }
+
     string SettingsFile { get; }
 
     string SecretsFile { get; }

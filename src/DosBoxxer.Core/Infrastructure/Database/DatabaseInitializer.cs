@@ -17,7 +17,7 @@ public interface IDatabaseInitializer
 public sealed class DatabaseInitializer : IDatabaseInitializer
 {
     /// <summary>Increment together with a new entry in <see cref="Migrations"/>.</summary>
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     private static readonly string[] Migrations =
     {
@@ -91,6 +91,24 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
             pc_speaker              INTEGER NULL,
             additional_config_lines TEXT NULL,
             pre_launch_commands     TEXT NULL
+        );
+        """,
+
+        // ---- version 2 : savegame / cloud-save configuration --------------------------
+        """
+        CREATE TABLE game_savegame_config (
+            game_id                 TEXT PRIMARY KEY REFERENCES games (id) ON DELETE CASCADE,
+            is_configured           INTEGER NOT NULL DEFAULT 0,
+            matched_catalog_title   TEXT NULL,
+            is_manual               INTEGER NOT NULL DEFAULT 0
+        );
+
+        CREATE TABLE game_savegame_entries (
+            game_id     TEXT NOT NULL REFERENCES games (id) ON DELETE CASCADE,
+            sort_order  INTEGER NOT NULL,
+            pattern     TEXT NOT NULL,
+            kind        INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (game_id, sort_order)
         );
         """,
     };

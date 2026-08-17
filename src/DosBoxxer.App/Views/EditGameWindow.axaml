@@ -309,6 +309,87 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
+
+      <!-- ===================== Savegames ===================== -->
+      <TabItem Header="{loc:Localize Savegame.SectionTitle}">
+        <ScrollViewer Padding="10,14" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14" DataContext="{Binding SavegameEditor}">
+
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0" Margin="0,0,8,0"
+                       Watermark="{loc:Localize Savegame.SearchTerm}"
+                       Text="{Binding SearchTerm, Mode=TwoWay}" />
+              <Button Grid.Column="1" Content="{loc:Localize Savegame.SearchAgain}"
+                      Command="{Binding SearchCommand}" />
+            </Grid>
+
+            <TextBlock Classes="tertiary" Text="{loc:Localize Savegame.Searching}"
+                       IsVisible="{Binding IsSearching}" />
+
+            <StackPanel Spacing="6" IsVisible="{Binding HasMatchedTitle}">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Savegame.MatchedTitle}" />
+              <TextBlock Text="{Binding MatchedTitle}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6" IsVisible="{Binding HasSuggestions}">
+              <TextBlock Classes="sectionLabel" Text="{loc:Localize Savegame.Suggestions}" />
+              <ListBox ItemsSource="{Binding Suggestions}"
+                       SelectedItem="{Binding SelectedSuggestion, Mode=TwoWay}"
+                       MaxHeight="160">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                      <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="{Binding Title}" />
+                        <TextBlock Classes="mono tertiary" Text="{Binding Pattern}" />
+                      </StackPanel>
+                      <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center" Margin="6,0">
+                        <TextBlock Text="{Binding ConfidenceLabel}" />
+                      </Border>
+                      <TextBlock Grid.Column="2" Classes="tertiary" VerticalAlignment="Center" Text="{Binding ScoreText}" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{loc:Localize Common.Select}" Classes="primary"
+                        Command="{Binding ApplySuggestionCommand}" />
+                <Button Content="{loc:Localize Savegame.NoMatchOption}"
+                        Command="{Binding UseNoMatchCommand}" />
+              </StackPanel>
+            </StackPanel>
+
+            <CheckBox Content="{loc:Localize Savegame.SkipOption}"
+                      IsChecked="{Binding SkipSavegames, Mode=TwoWay}" />
+
+            <StackPanel Spacing="6" IsVisible="{Binding !SkipSavegames}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="sectionLabel" Text="{loc:Localize Savegame.Entries}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="{loc:Localize Savegame.AddEntry}" Command="{Binding AddEntryCommand}" />
+              </Grid>
+              <TextBlock Classes="tertiary wrap" Text="{loc:Localize Savegame.EntriesHint}" />
+              <TextBlock Classes="tertiary" Text="{loc:Localize Savegame.NoEntries}" IsVisible="{Binding !HasEntries}" />
+              <ItemsControl ItemsSource="{Binding Entries}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,3">
+                      <TextBox Grid.Column="0" Margin="0,0,8,0"
+                               Watermark="{loc:Localize Savegame.Pattern}"
+                               Text="{Binding Pattern, Mode=TwoWay}" />
+                      <CheckBox Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center"
+                                Content="{loc:Localize Savegame.KindGlob}"
+                                IsChecked="{Binding IsGlob, Mode=TwoWay}" />
+                      <Button Grid.Column="2" Content="{loc:Localize Savegame.RemoveEntry}"
+                              Command="{Binding $parent[ItemsControl].DataContext.RemoveEntryCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
     </TabControl>
 
     <Border Grid.Row="2" Classes="panel" BorderThickness="0,1,0,0" Padding="26,14">

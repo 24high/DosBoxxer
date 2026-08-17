@@ -9,7 +9,7 @@ build_property.AvaloniaNameGeneratorAttachDevTools = true
 build_property.AvaloniaUseCompiledBindingsByDefault = false
 build_property.AvaloniaMainPackageVersion = 11.3.20
 build_property.AvaloniaPreviewerNetCoreToolPath = /home/dh/.nuget/packages/avalonia/11.3.20/buildTransitive//../tools/netstandard2.0/designer/Avalonia.Designer.HostApp.dll
-build_property.AvaloniaResourcePaths = /home/dh/DosBoxxer/src/DosBoxxer.App/App.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Controls.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Icons.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Theme.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/AddGameWizardWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ConfirmDialogWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/EditGameWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/LightboxWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MainWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MetadataSearchWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/RefreshMetadataWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SettingsWindow.axaml
+build_property.AvaloniaResourcePaths = /home/dh/DosBoxxer/src/DosBoxxer.App/App.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Controls.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Icons.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Styles/Theme.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/AddGameWizardWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ChoiceDialogWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ConfirmDialogWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/EditGameWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/LightboxWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MainWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/MetadataSearchWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/RefreshMetadataWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SettingsWindow.axaml,/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SyncConflictWindow.axaml
 build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
 build_property._MvvmToolkitIsUsingWindowsRuntimePack = false
 build_property.CsWinRTComponent = 
@@ -43,6 +43,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [/home/dh/DosBoxxer/src/DosBoxxer.App/Views/AddGameWizardWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ChoiceDialogWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/home/dh/DosBoxxer/src/DosBoxxer.App/Views/ConfirmDialogWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
@@ -62,4 +65,7 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SettingsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/home/dh/DosBoxxer/src/DosBoxxer.App/Views/SyncConflictWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

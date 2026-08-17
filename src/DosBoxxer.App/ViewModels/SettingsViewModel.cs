@@ -28,6 +28,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private readonly IPlatformService _platform;
     private readonly IImageLoader _imageLoader;
     private readonly IAppPaths _paths;
+    private readonly ICloudAuthService _cloudAuth;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private readonly string _originalLanguage;
@@ -102,6 +103,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _rememberWindowState = true;
 
+    // -- Google Drive --
+    [ObservableProperty]
+    private bool _isCloudBusy;
+
+    [ObservableProperty]
+    private string? _cloudMessage;
+
     [ObservableProperty]
     private string? _statusMessage;
 
@@ -123,6 +131,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         IPlatformService platform,
         IImageLoader imageLoader,
         IAppPaths paths,
+        ICloudAuthService cloudAuth,
         ILocalizationService localization,
         ILogger<SettingsViewModel> logger)
         : base(localization)
@@ -135,6 +144,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _platform = platform;
         _imageLoader = imageLoader;
         _paths = paths;
+        _cloudAuth = cloudAuth;
         _logger = logger;
 
         foreach (var language in localization.AvailableLanguages)
@@ -196,6 +206,17 @@ public sealed partial class SettingsViewModel : ViewModelBase
     public bool IsRawgSelected => SelectedProvider?.Key == "rawg";
 
     public string DataFolder => _paths.DataRoot;
+
+    // -- cloud state --
+    public bool IsCloudConnected => _cloudAuth.IsAuthenticated;
+
+    public bool IsCloudConfigured => _cloudAuth.IsConfigured;
+
+    public string CloudStatusText => IsCloudConnected
+        ? (string.IsNullOrEmpty(_cloudAuth.AccountEmail) ? L("Cloud.Connected") : L("Cloud.ConnectedAs", _cloudAuth.AccountEmail))
+        : L("Cloud.NotConnected");
+
+    public bool HasCloudMessage => !string.IsNullOrEmpty(CloudMessage);
 
     public bool HasStatusMessage => !string.IsNullOrEmpty(StatusMessage);
 
@@ -303,6 +324,71 @@ public sealed partial class SettingsViewModel : ViewModelBase
             ValidationMessage = L("Error.OpenFolderFailed");
         }
     }
+
+    [RelayCommand]
+    private async Task ConnectGoogleDriveAsync()
+    {
+        if (!IsCloudConfigured)
+        {
+            CloudMessage = L("Cloud.NotConfigured");
+            return;
+        }
+
+        IsCloudBusy = true;
+        CloudMessage = L("Cloud.Connecting");
+        try
+        {
+            var result = await _cloudAuth.ConnectAsync().ConfigureAwait(true);
+            CloudMessage = result.Status switch
+            {
+                CloudAuthStatus.Success => null,
+                CloudAuthStatus.NotConfigured => L("Cloud.NotConfigured"),
+                CloudAuthStatus.Cancelled => L("Cloud.ConnectCancelled"),
+                CloudAuthStatus.Denied => L("Cloud.ConnectDenied"),
+                CloudAuthStatus.Network => L("Cloud.NetworkError"),
+                _ => L("Cloud.ConnectFailed"),
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Google Drive connection failed");
+            CloudMessage = L("Cloud.ConnectFailed");
+        }
+        finally
+        {
+            IsCloudBusy = false;
+            RaiseCloudState();
+        }
+    }
+
+    [RelayCommand]
+    private async Task DisconnectGoogleDriveAsync()
+    {
+        IsCloudBusy = true;
+        try
+        {
+            await _cloudAuth.DisconnectAsync().ConfigureAwait(true);
+            CloudMessage = null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Google Drive disconnect failed");
+        }
+        finally
+        {
+            IsCloudBusy = false;
+            RaiseCloudState();
+        }
+    }
+
+    private void RaiseCloudState()
+    {
+        OnPropertyChanged(nameof(IsCloudConnected));
+        OnPropertyChanged(nameof(IsCloudConfigured));
+        OnPropertyChanged(nameof(CloudStatusText));
+    }
+
+    partial void OnCloudMessageChanged(string? value) => OnPropertyChanged(nameof(HasCloudMessage));
 
     [RelayCommand]
     private async Task SaveAsync()

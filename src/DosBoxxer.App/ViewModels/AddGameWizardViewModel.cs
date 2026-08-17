@@ -77,7 +77,7 @@ public sealed class SearchResultViewModel : ViewModelBase
 /// </summary>
 public sealed partial class AddGameWizardViewModel : ViewModelBase
 {
-    public const int StepCount = 4;
+    public const int StepCount = 5;
 
     private readonly IExecutableScanner _scanner;
     private readonly IGameMetadataProvider _metadataProvider;
@@ -86,6 +86,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly ISettingsService _settings;
     private readonly IImageLoader _imageLoader;
+    private readonly ISavegameCatalog _savegameCatalog;
     private readonly ILogger<AddGameWizardViewModel> _logger;
 
     private CancellationTokenSource? _scanCts;
@@ -152,6 +153,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
         IDialogService dialogs,
         ISettingsService settings,
         IImageLoader imageLoader,
+        ISavegameCatalog savegameCatalog,
         ILocalizationService localization,
         ILogger<AddGameWizardViewModel> logger)
         : base(localization)
@@ -163,8 +165,14 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
         _dialogs = dialogs;
         _settings = settings;
         _imageLoader = imageLoader;
+        _savegameCatalog = savegameCatalog;
         _logger = logger;
+
+        SavegameEditor = new SavegameConfigEditorViewModel(savegameCatalog, localization);
     }
+
+    /// <summary>Editor hosted by the new savegame step.</summary>
+    public SavegameConfigEditorViewModel SavegameEditor { get; }
 
     public ObservableCollection<ExecutableCandidateViewModel> Candidates { get; } = new();
 
@@ -187,6 +195,8 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     public bool IsStep3 => CurrentStep == 3;
 
     public bool IsStep4 => CurrentStep == 4;
+
+    public bool IsStep5 => CurrentStep == 5;
 
     public bool CanGoBack => CurrentStep > 1 && !IsBusy;
 
@@ -241,6 +251,23 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     public string ReviewMetadataState => _metadata is null ? L("Wizard.NoMetadataSelected") : string.Empty;
 
     public bool HasNoMetadata => _metadata is null;
+
+    public string ReviewSavegames
+    {
+        get
+        {
+            var config = SavegameEditor.Build();
+            if (!config.IsConfigured || config.Entries.Count == 0)
+            {
+                return L("Savegame.NotConfigured");
+            }
+
+            var paths = string.Join(", ", config.Entries.Select(e => e.RelativePattern));
+            return string.IsNullOrEmpty(config.MatchedCatalogTitle)
+                ? paths
+                : $"{config.MatchedCatalogTitle} — {paths}";
+        }
+    }
 
     private bool _searchAttempted;
 
@@ -309,6 +336,12 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
             case 3:
                 await LoadSelectedMetadataAsync().ConfigureAwait(true);
                 CurrentStep = 4;
+                await SavegameEditor.PrepareAsync(GameTitle, null).ConfigureAwait(true);
+                return;
+
+            case 4:
+                CurrentStep = 5;
+                RaiseReview();
                 return;
         }
     }
@@ -325,13 +358,14 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SkipMetadata()
+    private async Task SkipMetadataAsync()
     {
         _metadata = null;
         MetadataSkipped = true;
         SelectedResult = null;
         PreviewCover = null;
         CurrentStep = 4;
+        await SavegameEditor.PrepareAsync(GameTitle, null).ConfigureAwait(true);
         RaiseReview();
     }
 
@@ -412,6 +446,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
                     ? Path.GetFileName(PathHelper.Normalize(GameFolder))
                     : GameTitle.Trim(),
                 Metadata = _metadata,
+                SavegameConfig = SavegameEditor.Build(),
             };
 
             var progress = new Progress<string>(_ => InfoMessage = L("Wizard.DownloadingMedia"));
@@ -616,6 +651,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasReviewGenres));
         OnPropertyChanged(nameof(ReviewMetadataState));
         OnPropertyChanged(nameof(HasNoMetadata));
+        OnPropertyChanged(nameof(ReviewSavegames));
     }
 
     partial void OnCurrentStepChanged(int value)
@@ -625,6 +661,7 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsStep2));
         OnPropertyChanged(nameof(IsStep3));
         OnPropertyChanged(nameof(IsStep4));
+        OnPropertyChanged(nameof(IsStep5));
         OnPropertyChanged(nameof(CanGoBack));
         OnPropertyChanged(nameof(ShowNext));
         OnPropertyChanged(nameof(ShowSkipMetadata));
@@ -673,6 +710,8 @@ public sealed partial class AddGameWizardViewModel : ViewModelBase
             {
                 result.Dispose();
             }
+
+            SavegameEditor.Dispose();
         }
 
         base.Dispose(disposing);

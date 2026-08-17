@@ -200,6 +200,7 @@
                 <MenuItem Header="{loc:Localize Context.Play}" Command="{Binding PlayCommand}" />
                 <MenuItem Header="{loc:Localize Context.Edit}" Command="{Binding EditGameCommand}" />
                 <MenuItem Header="{loc:Localize Context.RefreshMetadata}" Command="{Binding RefreshMetadataCommand}" />
+                <MenuItem Header="{loc:Localize Sync.CloudSaves}" Command="{Binding SyncCloudSavesCommand}" />
                 <Separator />
                 <MenuItem Header="{loc:Localize Context.OpenFolder}" Command="{Binding OpenGameFolderCommand}" />
                 <MenuItem Header="{loc:Localize Context.ChangeCover}" Command="{Binding ChangeCoverCommand}" />
@@ -430,6 +431,16 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                       <PathIcon Data="{StaticResource IconFavoriteOutline}" Width="14" Height="14" />
                       <TextBlock Text="{Binding Details.FavoriteLabel}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="subtle"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Command="{Binding SyncCloudSavesCommand}"
+                          IsEnabled="{Binding !IsSyncing}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14" />
+                      <TextBlock Text="{loc:Localize Sync.CloudSaves}" />
                     </StackPanel>
                   </Button>
                 </StackPanel>

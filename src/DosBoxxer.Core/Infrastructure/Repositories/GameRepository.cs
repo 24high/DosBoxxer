@@ -3,6 +3,7 @@ using System.Globalization;
 using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Infrastructure.Database;
 using DosBoxxer.Core.Models;
+using DosBoxxer.Core.Models.Savegame;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
@@ -58,6 +59,7 @@ public sealed class GameRepository : IGameRepository
         await LoadGenresAsync(connection, games, cancellationToken).ConfigureAwait(false);
         await LoadScreenshotsAsync(connection, games, cancellationToken).ConfigureAwait(false);
         await LoadDosBoxSettingsAsync(connection, games, cancellationToken).ConfigureAwait(false);
+        await LoadSavegameConfigAsync(connection, games, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Loaded {Count} game(s) from the library", games.Count);
         return games.Values.ToList();
@@ -90,6 +92,7 @@ public sealed class GameRepository : IGameRepository
         await LoadGenresAsync(connection, map, cancellationToken).ConfigureAwait(false);
         await LoadScreenshotsAsync(connection, map, cancellationToken).ConfigureAwait(false);
         await LoadDosBoxSettingsAsync(connection, map, cancellationToken).ConfigureAwait(false);
+        await LoadSavegameConfigAsync(connection, map, cancellationToken).ConfigureAwait(false);
 
         return game;
     }
@@ -146,6 +149,7 @@ public sealed class GameRepository : IGameRepository
         await WriteGenresAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
         await WriteScreenshotsAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
         await WriteDosBoxSettingsAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
+        await WriteSavegameConfigAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Added game '{Title}' ({Id}) to the library", game.Title, game.Id);
@@ -194,6 +198,7 @@ public sealed class GameRepository : IGameRepository
         await WriteGenresAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
         await WriteScreenshotsAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
         await WriteDosBoxSettingsAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
+        await WriteSavegameConfigAsync(connection, (SqliteTransaction)transaction, game, cancellationToken).ConfigureAwait(false);
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Updated game '{Title}' ({Id})", game.Title, game.Id);
@@ -432,6 +437,112 @@ public sealed class GameRepository : IGameRepository
         command.Parameters.AddWithValue("$preLaunch", (object?)settings.PreLaunchCommands ?? DBNull.Value);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task WriteSavegameConfigAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        Game game,
+        CancellationToken cancellationToken)
+    {
+        var config = game.SavegameConfig;
+
+        await using (var deleteEntries = connection.CreateCommand())
+        {
+            deleteEntries.Transaction = transaction;
+            deleteEntries.CommandText = "DELETE FROM game_savegame_entries WHERE game_id = $id;";
+            deleteEntries.Parameters.AddWithValue("$id", game.Id.ToString("D"));
+            await deleteEntries.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // A never-configured game keeps no row at all, matching the DosBox-settings convention.
+        if (!config.IsConfigured && config.Entries.Count == 0 && config.MatchedCatalogTitle is null)
+        {
+            await using var deleteConfig = connection.CreateCommand();
+            deleteConfig.Transaction = transaction;
+            deleteConfig.CommandText = "DELETE FROM game_savegame_config WHERE game_id = $id;";
+            deleteConfig.Parameters.AddWithValue("$id", game.Id.ToString("D"));
+            await deleteConfig.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = """
+                INSERT INTO game_savegame_config (game_id, is_configured, matched_catalog_title, is_manual)
+                VALUES ($id, $configured, $matched, $manual)
+                ON CONFLICT (game_id) DO UPDATE SET
+                    is_configured = excluded.is_configured,
+                    matched_catalog_title = excluded.matched_catalog_title,
+                    is_manual = excluded.is_manual;
+                """;
+            command.Parameters.AddWithValue("$id", game.Id.ToString("D"));
+            command.Parameters.AddWithValue("$configured", config.IsConfigured ? 1 : 0);
+            command.Parameters.AddWithValue("$matched", (object?)config.MatchedCatalogTitle ?? DBNull.Value);
+            command.Parameters.AddWithValue("$manual", config.IsManual ? 1 : 0);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        var order = 0;
+        foreach (var entry in config.Entries)
+        {
+            await using var insert = connection.CreateCommand();
+            insert.Transaction = transaction;
+            insert.CommandText = """
+                INSERT INTO game_savegame_entries (game_id, sort_order, pattern, kind)
+                VALUES ($id, $order, $pattern, $kind);
+                """;
+            insert.Parameters.AddWithValue("$id", game.Id.ToString("D"));
+            insert.Parameters.AddWithValue("$order", order++);
+            insert.Parameters.AddWithValue("$pattern", entry.RelativePattern);
+            insert.Parameters.AddWithValue("$kind", (int)entry.Kind);
+            await insert.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task LoadSavegameConfigAsync(
+        SqliteConnection connection,
+        Dictionary<Guid, Game> games,
+        CancellationToken cancellationToken)
+    {
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT game_id, is_configured, matched_catalog_title, is_manual FROM game_savegame_config;";
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (!Guid.TryParse(reader.GetString(0), out var gameId) || !games.TryGetValue(gameId, out var game))
+                {
+                    continue;
+                }
+
+                game.SavegameConfig = new SavegameConfig
+                {
+                    GameId = gameId,
+                    IsConfigured = reader.GetInt32(1) != 0,
+                    MatchedCatalogTitle = GetNullableString(reader, 2),
+                    IsManual = reader.GetInt32(3) != 0,
+                };
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT game_id, pattern, kind FROM game_savegame_entries ORDER BY game_id, sort_order;";
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (!Guid.TryParse(reader.GetString(0), out var gameId) || !games.TryGetValue(gameId, out var game))
+                {
+                    continue;
+                }
+
+                game.SavegameConfig.Entries.Add(new SavegameEntry(
+                    reader.GetString(1),
+                    (SavegameEntryKind)reader.GetInt32(2)));
+            }
+        }
     }
 
     private static async Task LoadGenresAsync(

@@ -149,6 +149,13 @@ public sealed class GameLibraryService : IGameLibraryService
 
         game.SortTitle = TitleCleaner.ToSortTitle(game.Title);
 
+        if (request.SavegameConfig is not null)
+        {
+            var config = request.SavegameConfig.Clone();
+            config.GameId = game.Id;
+            game.SavegameConfig = config;
+        }
+
         if (request.Metadata is not null)
         {
             _merger.Merge(game, request.Metadata, MetadataMergeOptions.Initial);

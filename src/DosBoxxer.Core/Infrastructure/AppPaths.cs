@@ -33,6 +33,8 @@ public sealed class AppPaths : IAppPaths
         MetadataCacheDirectory = Path.Combine(CacheDirectory, "metadata");
         TempDirectory = Path.Combine(DataRoot, "temp");
         LogsDirectory = Path.Combine(DataRoot, "logs");
+        SyncMetadataDirectory = Path.Combine(DataRoot, "sync");
+        SavegameBackupDirectory = Path.Combine(DataRoot, "savegame-backups");
         DatabaseFile = Path.Combine(DatabaseDirectory, "library.db");
         SettingsFile = Path.Combine(DataRoot, "settings.json");
         SecretsFile = Path.Combine(DataRoot, "secrets.dat");
@@ -58,6 +60,10 @@ public sealed class AppPaths : IAppPaths
 
     public string LogsDirectory { get; }
 
+    public string SyncMetadataDirectory { get; }
+
+    public string SavegameBackupDirectory { get; }
+
     public string SettingsFile { get; }
 
     public string SecretsFile { get; }
@@ -68,6 +74,7 @@ public sealed class AppPaths : IAppPaths
                  {
                      DataRoot, DatabaseDirectory, CacheDirectory, CoversDirectory,
                      ScreenshotsDirectory, MetadataCacheDirectory, TempDirectory, LogsDirectory,
+                     SyncMetadataDirectory, SavegameBackupDirectory,
                  })
         {
             Directory.CreateDirectory(directory);

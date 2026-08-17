@@ -1,0 +1,61 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                xmlns:loc="using:DosBoxxer.App.Localization"
+                x:Class="DosBoxxer.App.Views.SyncConflictWindow"
+                Title="{loc:Localize Conflict.Title}"
+                Width="640" Height="520"
+                MinWidth="520" MinHeight="360"
+                Background="{DynamicResource SurfaceBrush}">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="24">
+
+    <TextBlock Grid.Row="0" Classes="h1 wrap" Text="{loc:Localize Conflict.Title}" />
+
+    <TextBlock Grid.Row="1" Classes="wrap" Margin="0,8,0,12" Text="{loc:Localize Conflict.Message}" />
+
+    <Border Grid.Row="2" Classes="panel" Padding="4">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Rows}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="panel" Margin="4" Padding="12">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="h3" Text="{Binding RelativePath}" />
+                  <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Classes="tertiary"
+                               Text="{loc:Localize Conflict.LocalTime}" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="tertiary"
+                               Text="{loc:Localize Conflict.CloudTime}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding LocalModified}" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CloudModified}" />
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Classes="tertiary" Text="{Binding LocalSize}" />
+                    <TextBlock Classes="tertiary" Text="{Binding CloudSize}" />
+                  </StackPanel>
+                  <ComboBox ItemsSource="{Binding Options}"
+                            SelectedItem="{Binding SelectedOption, Mode=TwoWay}"
+                            HorizontalAlignment="Left" MinWidth="220">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Label}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+    <Grid Grid.Row="3" Margin="0,14,0,0" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+      <Button Grid.Column="0" Content="{loc:Localize Conflict.UseLocal}" Command="{Binding UseLocalForAllCommand}" />
+      <Button Grid.Column="1" Margin="8,0,0,0" Content="{loc:Localize Conflict.UseCloud}" Command="{Binding UseCloudForAllCommand}" />
+      <Button Grid.Column="3" Content="{loc:Localize Common.Cancel}" Command="{Binding CancelCommand}" IsCancel="True" />
+      <Button Grid.Column="4" Margin="8,0,0,0" Classes="primary" Content="{loc:Localize Conflict.Apply}" Command="{Binding ApplyCommand}" IsDefault="True" />
+    </Grid>
+  </Grid>
+</v:DialogWindow>

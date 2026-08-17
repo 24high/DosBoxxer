@@ -11,4 +11,7 @@ public interface IPlatformService
 
     /// <summary>Reveals a file in the platform file manager (falls back to opening its folder).</summary>
     bool RevealFile(string filePath);
+
+    /// <summary>Opens an <c>http</c>/<c>https</c> URL in the user's default browser.</summary>
+    bool OpenUrl(string url);
 }

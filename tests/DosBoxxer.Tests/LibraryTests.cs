@@ -301,6 +301,50 @@ public sealed class GameRepositoryTests
     }
 
     [Fact]
+    public async Task SavegameConfig_IsPersistedAndReadBack()
+    {
+        var (repository, temp) = await CreateRepositoryAsync();
+        using var _ = temp;
+
+        var game = SampleGame();
+        game.SavegameConfig = new DosBoxxer.Core.Models.Savegame.SavegameConfig
+        {
+            GameId = game.Id,
+            IsConfigured = true,
+            MatchedCatalogTitle = "Doom",
+            IsManual = false,
+        };
+        game.SavegameConfig.Entries.Add(new DosBoxxer.Core.Models.Savegame.SavegameEntry("SAVE", DosBoxxer.Core.Models.Savegame.SavegameEntryKind.Path));
+        game.SavegameConfig.Entries.Add(new DosBoxxer.Core.Models.Savegame.SavegameEntry("*.SAV", DosBoxxer.Core.Models.Savegame.SavegameEntryKind.Glob));
+
+        await repository.AddAsync(game);
+        var loaded = await repository.GetAsync(game.Id);
+
+        Assert.NotNull(loaded);
+        Assert.True(loaded!.SavegameConfig.IsConfigured);
+        Assert.Equal("Doom", loaded.SavegameConfig.MatchedCatalogTitle);
+        Assert.Equal(2, loaded.SavegameConfig.Entries.Count);
+        Assert.Equal("SAVE", loaded.SavegameConfig.Entries[0].RelativePattern);
+        Assert.Equal(DosBoxxer.Core.Models.Savegame.SavegameEntryKind.Glob, loaded.SavegameConfig.Entries[1].Kind);
+    }
+
+    [Fact]
+    public async Task GameWithoutSavegameConfig_LoadsAsNotConfigured()
+    {
+        var (repository, temp) = await CreateRepositoryAsync();
+        using var _ = temp;
+
+        var game = SampleGame();
+        await repository.AddAsync(game);
+
+        var loaded = await repository.GetAsync(game.Id);
+
+        // Backwards compatibility: an existing game with no savegame row is "not configured".
+        Assert.False(loaded!.SavegameConfig.IsConfigured);
+        Assert.Empty(loaded.SavegameConfig.Entries);
+    }
+
+    [Fact]
     public async Task Update_ReplacesGenresAndScreenshots()
     {
         var (repository, temp) = await CreateRepositoryAsync();

@@ -1,5 +1,6 @@
 using DosBoxxer.Core.Models;
 using DosBoxxer.Core.Models.Metadata;
+using DosBoxxer.Core.Models.Savegame;
 
 namespace DosBoxxer.Core.Abstractions;
 
@@ -13,6 +14,9 @@ public sealed class AddGameRequest
 
     /// <summary>Metadata chosen in the wizard. <c>null</c> when the user skipped the lookup.</summary>
     public GameMetadata? Metadata { get; init; }
+
+    /// <summary>Savegame configuration chosen in the wizard. <c>null</c> means "not configured".</summary>
+    public SavegameConfig? SavegameConfig { get; init; }
 }
 
 /// <summary>

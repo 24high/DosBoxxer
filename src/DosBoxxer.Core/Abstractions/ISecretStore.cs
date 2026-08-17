@@ -22,4 +22,7 @@ public static class SecretKeys
     public const string MobyGamesApiKey = "mobygames.apikey";
     public const string IgdbClientSecret = "igdb.clientsecret";
     public const string RawgApiKey = "rawg.apikey";
+
+    /// <summary>OAuth refresh token for the connected Google account.</summary>
+    public const string GoogleDriveRefreshToken = "googledrive.refreshtoken";
 }

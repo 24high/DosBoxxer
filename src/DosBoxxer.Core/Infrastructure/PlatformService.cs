@@ -49,6 +49,35 @@ public sealed class PlatformService : IPlatformService
         return parent is not null && OpenDirectory(parent);
     }
 
+    public bool OpenUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url) ||
+            !Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            _logger.LogWarning("Refusing to open a non-http(s) URL");
+            return false;
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // On Windows a URL must go through the shell to reach the default browser.
+            try
+            {
+                using var process = Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+                return process is not null;
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or PlatformNotSupportedException)
+            {
+                _logger.LogWarning("Could not open the browser ({Type})", ex.GetType().Name);
+                return false;
+            }
+        }
+
+        var command = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open";
+        return Start(command, url);
+    }
+
     private static string GetFileManagerCommand()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

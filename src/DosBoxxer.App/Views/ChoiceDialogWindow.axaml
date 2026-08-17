@@ -1,0 +1,41 @@
+<v:DialogWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:v="using:DosBoxxer.App.Views"
+                x:Class="DosBoxxer.App.Views.ChoiceDialogWindow"
+                Title="{Binding DialogTitle}"
+                Width="460"
+                SizeToContent="Height"
+                CanResize="False"
+                Background="{DynamicResource SurfaceBrush}">
+
+  <StackPanel Margin="26" Spacing="16">
+
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <PathIcon Data="{StaticResource IconWarning}"
+                Width="20" Height="20"
+                VerticalAlignment="Top"
+                Margin="0,2,0,0"
+                Foreground="{DynamicResource DangerBrush}"
+                IsVisible="{Binding IsError}" />
+      <TextBlock Classes="h1 wrap" Text="{Binding DialogTitle}" />
+    </StackPanel>
+
+    <TextBlock Classes="wrap" Text="{Binding Message}" />
+
+    <ItemsControl ItemsSource="{Binding Options}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Button Content="{Binding Label}"
+                  Classes.primary="{Binding IsPrimary}"
+                  Command="{Binding $parent[ItemsControl].DataContext.ChooseCommand}"
+                  CommandParameter="{Binding Index}" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</v:DialogWindow>

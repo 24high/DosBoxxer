@@ -29,6 +29,11 @@
     <EmbeddedResource Include="Assets/dosbox-default.conf">
       <LogicalName>DosBoxxer.Core.Assets.dosbox-default.conf</LogicalName>
     </EmbeddedResource>
+
+    <!-- Bundled savegame path catalog (dos_savegame_pfade.json), used for title matching. -->
+    <EmbeddedResource Include="Assets/dos_savegame_pfade.json">
+      <LogicalName>DosBoxxer.Core.Assets.dos_savegame_pfade.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

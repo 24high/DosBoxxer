@@ -10,6 +10,7 @@ using DosBoxxer.App.Services;
 using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Helpers;
 using DosBoxxer.Core.Models;
+using DosBoxxer.Core.Models.Cloud;
 using DosBoxxer.Core.Models.Metadata;
 using Microsoft.Extensions.Logging;
 
@@ -31,6 +32,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly IImageLoader _imageLoader;
     private readonly IGameMetadataProvider _metadataProvider;
+    private readonly ICloudSyncService _cloudSync;
+    private readonly IConflictResolver _conflictResolver;
     private readonly ILogger<MainWindowViewModel> _logger;
 
     private readonly List<Game> _allGames = new();
@@ -66,6 +69,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private string _runningGameText = string.Empty;
 
     [ObservableProperty]
+    private bool _isSyncing;
+
+    [ObservableProperty]
     private GameCardViewModel? _selectedCard;
 
     [ObservableProperty]
@@ -85,6 +91,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IDialogService dialogs,
         IImageLoader imageLoader,
         IGameMetadataProvider metadataProvider,
+        ICloudSyncService cloudSync,
+        IConflictResolver conflictResolver,
         ILocalizationService localization,
         ILogger<MainWindowViewModel> logger)
         : base(localization)
@@ -96,6 +104,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _dialogs = dialogs;
         _imageLoader = imageLoader;
         _metadataProvider = metadataProvider;
+        _cloudSync = cloudSync;
+        _conflictResolver = conflictResolver;
         _logger = logger;
 
         Details = new GameDetailsViewModel(imageLoader, localization);
@@ -393,6 +403,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusMessage = L("Status.GameAdded", game.Title);
         OnPropertyChanged(nameof(IsLibraryEmpty));
         OnPropertyChanged(nameof(HasGames));
+
+        // First cloud sync for the freshly added game (skipped silently when cloud is not set up).
+        if (_cloudSync.IsCloudUsable && game.SavegameConfig.IsConfigured)
+        {
+            var outcome = await SyncAsync(game.Id, SyncTrigger.GameAdded).ConfigureAwait(true);
+            if (outcome.Success)
+            {
+                ReportSyncSummary(outcome);
+            }
+        }
     }
 
     /// <summary>
@@ -495,6 +515,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         try
         {
+            // Pre-launch sync: pull a newer cloud save before starting. DOSBox is NEVER started
+            // in parallel — it only starts once the sync completed, was skipped or the user chose
+            // to start anyway.
+            if (!await RunPreLaunchSyncAsync(game).ConfigureAwait(true))
+            {
+                return;
+            }
+
             var result = await _launcher.LaunchAsync(game).ConfigureAwait(true);
 
             if (!result.Success)
@@ -516,6 +544,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             UpdateCategoryCounts();
 
             StatusMessage = L("Status.GameFinished", game.Title, FormatDuration(result.Duration));
+
+            // Post-exit sync: the DOSBox process has fully exited, so savegame files are closed and
+            // it is safe to upload the freshly played state.
+            await RunPostExitSyncAsync(game).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -526,6 +558,145 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             IsGameRunning = false;
         }
+    }
+
+    // ---- cloud sync -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Runs the pre-launch sync. Returns <c>true</c> when the game may start (sync succeeded, was
+    /// skipped, or the user chose to start anyway) and <c>false</c> when the launch was cancelled.
+    /// </summary>
+    private async Task<bool> RunPreLaunchSyncAsync(Game game)
+    {
+        if (!_cloudSync.IsCloudUsable || !game.SavegameConfig.IsConfigured)
+        {
+            return true;
+        }
+
+        while (true)
+        {
+            StatusMessage = L("Sync.PreLaunch");
+            var outcome = await SyncAsync(game.Id, SyncTrigger.PreLaunch).ConfigureAwait(true);
+
+            if (outcome.Success)
+            {
+                ReportSyncSummary(outcome);
+                return true;
+            }
+
+            // Failed or the user cancelled a conflict resolution: offer a clear choice.
+            var choice = await _dialogs.ShowChoiceAsync(
+                L("PreLaunch.FailedTitle"),
+                L("PreLaunch.FailedMessage"),
+                new[] { L("PreLaunch.Retry"), L("PreLaunch.StartAnyway"), L("PreLaunch.CancelStart") },
+                primaryIndex: 0,
+                isError: true).ConfigureAwait(true);
+
+            switch (choice)
+            {
+                case 0:
+                    continue; // retry
+                case 1:
+                    return true; // start anyway
+                default:
+                    StatusMessage = L("Status.Ready");
+                    return false; // cancel start
+            }
+        }
+    }
+
+    private async Task RunPostExitSyncAsync(Game game)
+    {
+        if (!_cloudSync.IsCloudUsable || !game.SavegameConfig.IsConfigured)
+        {
+            return;
+        }
+
+        StatusMessage = L("Sync.PostExit");
+        var outcome = await SyncAsync(game.Id, SyncTrigger.PostExit).ConfigureAwait(true);
+
+        if (outcome.Success)
+        {
+            ReportSyncSummary(outcome);
+        }
+        else
+        {
+            // The local savegame is always safe; make the upload failure visible without blocking.
+            ErrorMessage = L("PostExit.FailedMessage");
+        }
+    }
+
+    /// <summary>Manual "Sync cloud saves" action for a game.</summary>
+    [RelayCommand]
+    private async Task SyncCloudSavesAsync(GameCardViewModel? card)
+    {
+        var target = card ?? SelectedCard;
+        if (target is null)
+        {
+            return;
+        }
+
+        var game = target.Game;
+
+        if (!_cloudSync.IsCloudUsable)
+        {
+            StatusMessage = L("Sync.NotConfigured");
+            return;
+        }
+
+        if (!game.SavegameConfig.IsConfigured || !game.SavegameConfig.HasSavegames)
+        {
+            StatusMessage = L("Sync.NoSavegames");
+            return;
+        }
+
+        StatusMessage = L("Sync.Running");
+        var outcome = await SyncAsync(game.Id, SyncTrigger.Manual).ConfigureAwait(true);
+
+        if (outcome.Success)
+        {
+            ReportSyncSummary(outcome);
+        }
+        else if (outcome.Status == SyncStatus.Conflict)
+        {
+            StatusMessage = L("Sync.Failed");
+        }
+        else
+        {
+            ErrorMessage = L("Sync.Failed");
+        }
+    }
+
+    private async Task<SyncOutcome> SyncAsync(Guid gameId, SyncTrigger trigger)
+    {
+        IsSyncing = true;
+        try
+        {
+            var progress = new Progress<SyncProgress>(_ => { });
+            return await _cloudSync
+                .SyncGameAsync(gameId, trigger, _conflictResolver, progress)
+                .ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cloud sync failed unexpectedly");
+            return SyncOutcome.Failed(SyncErrorKind.Unexpected, ex.Message);
+        }
+        finally
+        {
+            IsSyncing = false;
+        }
+    }
+
+    private void ReportSyncSummary(SyncOutcome outcome)
+    {
+        if (outcome.Status == SyncStatus.Skipped)
+        {
+            return;
+        }
+
+        var s = outcome.Summary;
+        StatusMessage = L("Sync.Summary", s.Uploaded, s.Downloaded, s.Unchanged, s.Conflicts);
     }
 
     private string DescribeLaunchFailure(LaunchStatus status) => status switch

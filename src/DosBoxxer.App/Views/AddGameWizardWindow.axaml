@@ -22,7 +22,8 @@
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step1Title}" IsVisible="{Binding IsStep1}" />
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step2Title}" IsVisible="{Binding IsStep2}" />
         <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step3Title}" IsVisible="{Binding IsStep3}" />
-        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step4Title}" IsVisible="{Binding IsStep4}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step5Title}" IsVisible="{Binding IsStep4}" />
+        <TextBlock Classes="h1" Text="{loc:Localize Wizard.Step4Title}" IsVisible="{Binding IsStep5}" />
       </StackPanel>
     </Border>
 
@@ -135,8 +136,85 @@
           <TextBlock Classes="tertiary wrap" Text="{loc:Localize Wizard.MetadataOptional}" />
         </StackPanel>
 
-        <!-- ===================== Step 4 ===================== -->
+        <!-- ===================== Step 4 : Savegames / Cloud Saves ===================== -->
         <StackPanel Spacing="14" IsVisible="{Binding IsStep4}">
+          <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step5Description}" />
+
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Margin="0,0,8,0"
+                     Watermark="{loc:Localize Savegame.SearchTerm}"
+                     Text="{Binding SavegameEditor.SearchTerm, Mode=TwoWay}" />
+            <Button Grid.Column="1" Content="{loc:Localize Savegame.SearchAgain}"
+                    Command="{Binding SavegameEditor.SearchCommand}" />
+          </Grid>
+
+          <TextBlock Classes="tertiary" Text="{loc:Localize Savegame.Searching}"
+                     IsVisible="{Binding SavegameEditor.IsSearching}" />
+
+          <!-- Suggestions -->
+          <StackPanel Spacing="6" IsVisible="{Binding SavegameEditor.HasSuggestions}">
+            <TextBlock Classes="sectionLabel" Text="{loc:Localize Savegame.Suggestions}" />
+            <ListBox ItemsSource="{Binding SavegameEditor.Suggestions}"
+                     SelectedItem="{Binding SavegameEditor.SelectedSuggestion, Mode=TwoWay}"
+                     MaxHeight="180">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto,Auto" Margin="2">
+                    <StackPanel Grid.Column="0" Spacing="2">
+                      <TextBlock Text="{Binding Title}" />
+                      <TextBlock Classes="mono tertiary" Text="{Binding Pattern}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center" Margin="6,0">
+                      <TextBlock Text="{Binding ConfidenceLabel}" />
+                    </Border>
+                    <TextBlock Grid.Column="2" Classes="tertiary" VerticalAlignment="Center" Text="{Binding ScoreText}" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="{loc:Localize Common.Select}" Classes="primary"
+                      Command="{Binding SavegameEditor.ApplySuggestionCommand}" />
+              <Button Content="{loc:Localize Savegame.NoMatchOption}"
+                      Command="{Binding SavegameEditor.UseNoMatchCommand}" />
+            </StackPanel>
+          </StackPanel>
+
+          <CheckBox Content="{loc:Localize Savegame.SkipOption}"
+                    IsChecked="{Binding SavegameEditor.SkipSavegames, Mode=TwoWay}" />
+
+          <!-- Manual entries -->
+          <StackPanel Spacing="6" IsVisible="{Binding !SavegameEditor.SkipSavegames}">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0" Classes="sectionLabel" Text="{loc:Localize Savegame.Entries}" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Content="{loc:Localize Savegame.AddEntry}"
+                      Command="{Binding SavegameEditor.AddEntryCommand}" />
+            </Grid>
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Savegame.EntriesHint}" />
+            <TextBlock Classes="tertiary" Text="{loc:Localize Savegame.NoEntries}"
+                       IsVisible="{Binding !SavegameEditor.HasEntries}" />
+            <ItemsControl ItemsSource="{Binding SavegameEditor.Entries}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,3">
+                    <TextBox Grid.Column="0" Margin="0,0,8,0"
+                             Watermark="{loc:Localize Savegame.Pattern}"
+                             Text="{Binding Pattern, Mode=TwoWay}" />
+                    <CheckBox Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center"
+                              Content="{loc:Localize Savegame.KindGlob}"
+                              IsChecked="{Binding IsGlob, Mode=TwoWay}" />
+                    <Button Grid.Column="2" Content="{loc:Localize Savegame.RemoveEntry}"
+                            Command="{Binding $parent[ItemsControl].DataContext.SavegameEditor.RemoveEntryCommand}"
+                            CommandParameter="{Binding}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- ===================== Step 5 : Review ===================== -->
+        <StackPanel Spacing="14" IsVisible="{Binding IsStep5}">
           <TextBlock Classes="secondary wrap" Text="{loc:Localize Wizard.Step4Description}" />
 
           <StackPanel Spacing="6">
@@ -170,6 +248,10 @@
               <Grid ColumnDefinitions="150,*">
                 <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Edit.GameDirectory}" />
                 <TextBlock Grid.Column="1" Classes="mono wrap" Text="{Binding ReviewFolder}" />
+              </Grid>
+              <Grid ColumnDefinitions="150,*">
+                <TextBlock Grid.Column="0" Classes="secondary" Text="{loc:Localize Savegame.ReviewTitle}" />
+                <TextBlock Grid.Column="1" Classes="wrap" Text="{Binding ReviewSavegames}" />
               </Grid>
 
               <TextBlock Classes="tertiary"
@@ -227,7 +309,7 @@
                 Content="{loc:Localize Wizard.AddGame}"
                 Command="{Binding FinishCommand}"
                 IsEnabled="{Binding !IsBusy}"
-                IsVisible="{Binding IsStep4}" />
+                IsVisible="{Binding IsStep5}" />
       </Grid>
     </Border>
   </Grid>

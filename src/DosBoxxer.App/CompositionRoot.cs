@@ -6,8 +6,11 @@ using DosBoxxer.App.Services;
 using DosBoxxer.App.ViewModels;
 using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Infrastructure;
+using DosBoxxer.Core.Infrastructure.Cloud;
+using DosBoxxer.Core.Infrastructure.Cloud.Google;
 using DosBoxxer.Core.Infrastructure.Database;
 using DosBoxxer.Core.Infrastructure.DosBox;
+using DosBoxxer.Core.Infrastructure.Savegame;
 using DosBoxxer.Core.Infrastructure.Igdb;
 using DosBoxxer.Core.Infrastructure.Media;
 using DosBoxxer.Core.Infrastructure.MobyGames;
@@ -114,9 +117,30 @@ public static class CompositionRoot
         services.AddSingleton<IMetadataMerger, MetadataMerger>();
         services.AddSingleton<IGameLibraryService, GameLibraryService>();
 
+        // ---- savegames & cloud saves --------------------------------------------------
+        // A dedicated HTTP client for the Google OAuth token endpoint and the Drive REST API.
+        services.AddHttpClient(GoogleOAuthService.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(100);
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DosBoxxer", "1.0"));
+        });
+
+        services.AddSingleton<ITitleMatcher, PhoneticTitleMatcher>();
+        services.AddSingleton<ISavegameCatalog>(sp => new SavegameCatalog(
+            sp.GetRequiredService<ITitleMatcher>(),
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger<SavegameCatalog>(),
+            sp.GetRequiredService<ISettingsService>().Current.SavegameCatalogPath));
+        services.AddSingleton<ILocalSavegameScanner, LocalSavegameScanner>();
+        services.AddSingleton<ISyncMetadataStore, SyncMetadataStore>();
+
+        services.AddSingleton<ICloudAuthService, GoogleOAuthService>();
+        services.AddSingleton<ICloudStorage, GoogleDriveStorage>();
+        services.AddSingleton<ICloudSyncService, CloudSyncService>();
+
         // ---- UI services --------------------------------------------------------------
         services.AddSingleton<IImageLoader, ImageLoader>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IConflictResolver, DialogConflictResolver>();
         services.AddSingleton<MainWindowViewModel>();
 
         return services.BuildServiceProvider();

@@ -136,6 +136,7 @@ public sealed partial class EditGameViewModel : ViewModelBase
         IDosBoxConfigBuilder configBuilder,
         ISettingsService settings,
         IAppPaths paths,
+        ISavegameCatalog savegameCatalog,
         ILocalizationService localization,
         ILogger<EditGameViewModel> logger)
         : base(localization)
@@ -148,6 +149,8 @@ public sealed partial class EditGameViewModel : ViewModelBase
         _settings = settings;
         _paths = paths;
         _logger = logger;
+
+        SavegameEditor = new SavegameConfigEditorViewModel(savegameCatalog, localization);
 
         _title = game.Title;
         _sortTitle = game.SortTitle;
@@ -197,6 +200,8 @@ public sealed partial class EditGameViewModel : ViewModelBase
         }
     }
 
+    public SavegameConfigEditorViewModel SavegameEditor { get; }
+
     public ObservableCollection<GenreSelectionViewModel> Genres { get; } = new();
 
     public ObservableCollection<ScreenshotViewModel> Screenshots { get; } = new();
@@ -232,6 +237,8 @@ public sealed partial class EditGameViewModel : ViewModelBase
         {
             await screenshot.LoadAsync().ConfigureAwait(true);
         }
+
+        await SavegameEditor.PrepareAsync(_original.Title, _original.SavegameConfig).ConfigureAwait(true);
     }
 
     [RelayCommand]
@@ -450,6 +457,9 @@ public sealed partial class EditGameViewModel : ViewModelBase
         _original.DosBoxSettings = BuildDosBoxSettings();
         _original.DosBoxSettings.GameId = _original.Id;
 
+        _original.SavegameConfig = SavegameEditor.Build();
+        _original.SavegameConfig.GameId = _original.Id;
+
         try
         {
             await _library.UpdateGameAsync(_original).ConfigureAwait(true);
@@ -512,6 +522,8 @@ public sealed partial class EditGameViewModel : ViewModelBase
             {
                 screenshot.Dispose();
             }
+
+            SavegameEditor.Dispose();
         }
 
         base.Dispose(disposing);

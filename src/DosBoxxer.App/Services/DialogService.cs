@@ -10,6 +10,7 @@ using DosBoxxer.App.Views;
 using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Helpers;
 using DosBoxxer.Core.Models;
+using DosBoxxer.Core.Models.Cloud;
 using DosBoxxer.Core.Models.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -327,6 +328,37 @@ public sealed class DialogService : IDialogService
         return selection;
     }
 
+    public async Task<int> ShowChoiceAsync(string title, string message, IReadOnlyList<string> options, int primaryIndex = 0, bool isError = false)
+    {
+        var viewModel = new ChoiceDialogViewModel(_localization)
+        {
+            DialogTitle = title,
+            Message = message,
+            IsError = isError,
+        };
+
+        for (var i = 0; i < options.Count; i++)
+        {
+            viewModel.Options.Add(new ChoiceOption { Index = i, Label = options[i], IsPrimary = i == primaryIndex });
+        }
+
+        var window = new ChoiceDialogWindow { DataContext = viewModel };
+        var chosen = await ShowWindowAsync(window, viewModel).ConfigureAwait(true);
+        return chosen ? viewModel.SelectedIndex : -1;
+    }
+
+    public async Task<ConflictDecision?> ShowSyncConflictAsync(IReadOnlyList<SyncPlanItem> conflicts)
+    {
+        var viewModel = new SyncConflictViewModel(conflicts, _localization);
+        var window = new SyncConflictWindow { DataContext = viewModel };
+
+        var confirmed = await ShowWindowAsync(window, viewModel).ConfigureAwait(true);
+        var result = confirmed ? viewModel.Result : null;
+
+        viewModel.Dispose();
+        return result;
+    }
+
     // ---- plumbing ----------------------------------------------------------------------------
 
     private async Task<bool> ShowDialogAsync<TWindow>(ConfirmDialogViewModel viewModel)
@@ -374,6 +406,12 @@ public sealed class DialogService : IDialogService
             case ConfirmDialogViewModel confirm:
                 confirm.CloseRequested += OnCloseRequested;
                 break;
+            case ChoiceDialogViewModel choice:
+                choice.CloseRequested += OnCloseRequested;
+                break;
+            case SyncConflictViewModel conflict:
+                conflict.CloseRequested += OnCloseRequested;
+                break;
             default:
                 _logger.LogWarning("Unknown dialog view model type {Type}", viewModel.GetType().Name);
                 break;
@@ -417,6 +455,12 @@ public sealed class DialogService : IDialogService
                 break;
             case ConfirmDialogViewModel confirm:
                 confirm.CloseRequested -= OnCloseRequested;
+                break;
+            case ChoiceDialogViewModel choice:
+                choice.CloseRequested -= OnCloseRequested;
+                break;
+            case SyncConflictViewModel conflict:
+                conflict.CloseRequested -= OnCloseRequested;
                 break;
         }
 

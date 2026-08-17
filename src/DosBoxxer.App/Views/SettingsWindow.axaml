@@ -61,6 +61,29 @@
           </StackPanel>
         </Border>
 
+        <!-- ==================== Cloud saves (Google Drive) ==================== -->
+        <Border Classes="card" Padding="20">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="h2" Text="{loc:Localize Cloud.SectionTitle}" />
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Cloud.Intro}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <TextBlock Classes="sectionLabel" Text="{Binding CloudStatusText}" VerticalAlignment="Center" />
+              <Button Content="{loc:Localize Cloud.Connect}"
+                      Command="{Binding ConnectGoogleDriveCommand}"
+                      IsEnabled="{Binding IsCloudConfigured}"
+                      IsVisible="{Binding !IsCloudConnected}" />
+              <Button Content="{loc:Localize Cloud.Disconnect}"
+                      Command="{Binding DisconnectGoogleDriveCommand}"
+                      IsVisible="{Binding IsCloudConnected}" />
+            </StackPanel>
+
+            <TextBlock Classes="tertiary wrap" Text="{loc:Localize Cloud.ConnectHint}" />
+            <TextBlock Classes="wrap" Foreground="{DynamicResource DangerBrush}"
+                       Text="{Binding CloudMessage}" IsVisible="{Binding HasCloudMessage}" />
+          </StackPanel>
+        </Border>
+
         <!-- ==================== Metadata provider ==================== -->
         <Border Classes="card" Padding="20">
           <StackPanel Spacing="14">

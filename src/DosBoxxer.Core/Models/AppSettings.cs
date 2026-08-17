@@ -47,6 +47,12 @@ public sealed class AppSettings
 
     public RawgSettings Rawg { get; set; } = new();
 
+    // ---- Cloud saves ------------------------------------------------------------
+    public GoogleDriveSettings GoogleDrive { get; set; } = new();
+
+    /// <summary>Optional path to an external savegame catalog JSON; falls back to the bundled one.</summary>
+    public string? SavegameCatalogPath { get; set; }
+
     // ---- Localisation -----------------------------------------------------------
     /// <summary>BCP-47 language tag, e.g. <c>en</c>, <c>de</c>, <c>zh-Hans</c>.</summary>
     public string Language { get; set; } = "en";
@@ -82,6 +88,8 @@ public sealed class AppSettings
         MobyGames = MobyGames.Clone(),
         Igdb = Igdb.Clone(),
         Rawg = Rawg.Clone(),
+        GoogleDrive = GoogleDrive.Clone(),
+        SavegameCatalogPath = SavegameCatalogPath,
         Language = Language,
         CoverSize = CoverSize,
         DoubleClickAction = DoubleClickAction,
@@ -253,6 +261,47 @@ public sealed class RawgSettings
         PlatformId = PlatformId,
         MaxScreenshots = MaxScreenshots,
         ApiKey = ApiKey,
+    };
+}
+
+/// <summary>
+/// Google Drive cloud-save connection settings. The OAuth 2.0 "Desktop app" client id and client
+/// secret are hard coded in the application (see the constants below) and are neither persisted
+/// nor user-configurable. Only the connected account's e-mail is stored in <c>settings.json</c>;
+/// the refresh token lives in the secret store.
+/// </summary>
+public sealed class GoogleDriveSettings
+{
+    /// <summary>OAuth 2.0 client id of the bundled "Desktop app" credential.</summary>
+    public const string HardcodedClientId = "307242373440-brdi8av2t7lk701knmm9so459vsjdsjg.apps.googleusercontent.com";
+
+    /// <summary>OAuth 2.0 client secret of the bundled "Desktop app" credential.</summary>
+    public const string HardcodedClientSecret = "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";
+
+    /// <summary>OAuth 2.0 client id. Defaults to the bundled credential; never serialised.</summary>
+    [JsonIgnore]
+    public string? ClientId { get; set; } = HardcodedClientId;
+
+    /// <summary>Email of the connected account, shown in the UI. Informational only.</summary>
+    public string? AccountEmail { get; set; }
+
+    // -- transient, never serialised ------------------------------------------------
+    [JsonIgnore]
+    public string? ClientSecret { get; set; } = HardcodedClientSecret;
+
+    /// <summary>
+    /// True when an OAuth client is configured. This is the <c>cloudConfigured</c> half of the
+    /// central <c>cloudConfigured &amp;&amp; cloudAuthenticated</c> gate.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
+
+    public GoogleDriveSettings Clone() => new()
+    {
+        ClientId = ClientId,
+        AccountEmail = AccountEmail,
+        ClientSecret = ClientSecret,
     };
 }
 

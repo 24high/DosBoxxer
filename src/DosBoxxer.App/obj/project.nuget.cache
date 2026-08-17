@@ -1,19 +1,22 @@
 {
   "version": 2,
-  "dgSpecHash": "n5llArG850w=",
+  "dgSpecHash": "e+f2M/KAI4M=",
   "success": true,
   "projectFilePath": "/home/dh/DosBoxxer/src/DosBoxxer.App/DosBoxxer.App.csproj",
   "expectedPackageFiles": [
     "/home/dh/.nuget/packages/avalonia/11.3.20/avalonia.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.angle.windows.natives/2.1.25547.20250602/avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.buildservices/11.3.2/avalonia.buildservices.11.3.2.nupkg.sha512",
+    "/home/dh/.nuget/packages/avalonia.controls.colorpicker/11.3.20/avalonia.controls.colorpicker.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.desktop/11.3.20/avalonia.desktop.11.3.20.nupkg.sha512",
+    "/home/dh/.nuget/packages/avalonia.diagnostics/11.3.20/avalonia.diagnostics.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.fonts.inter/11.3.20/avalonia.fonts.inter.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.freedesktop/11.3.20/avalonia.freedesktop.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.native/11.3.20/avalonia.native.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.remote.protocol/11.3.20/avalonia.remote.protocol.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.skia/11.3.20/avalonia.skia.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.themes.fluent/11.3.20/avalonia.themes.fluent.11.3.20.nupkg.sha512",
+    "/home/dh/.nuget/packages/avalonia.themes.simple/11.3.20/avalonia.themes.simple.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.win32/11.3.20/avalonia.win32.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/avalonia.x11/11.3.20/avalonia.x11.11.3.20.nupkg.sha512",
     "/home/dh/.nuget/packages/communitytoolkit.mvvm/8.4.0/communitytoolkit.mvvm.8.4.0.nupkg.sha512",
@@ -51,10 +54,7 @@
     "/home/dh/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.6/sqlitepclraw.provider.e_sqlite3.2.1.6.nupkg.sha512",
     "/home/dh/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
     "/home/dh/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512",
-    "/home/dh/.nuget/packages/tmds.dbus.protocol/0.21.3/tmds.dbus.protocol.0.21.3.nupkg.sha512",
-    "/home/dh/.nuget/packages/microsoft.netcore.app.runtime.osx-x64/8.0.29/microsoft.netcore.app.runtime.osx-x64.8.0.29.nupkg.sha512",
-    "/home/dh/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-x64/8.0.29/microsoft.aspnetcore.app.runtime.osx-x64.8.0.29.nupkg.sha512",
-    "/home/dh/.nuget/packages/microsoft.netcore.app.host.osx-x64/8.0.29/microsoft.netcore.app.host.osx-x64.8.0.29.nupkg.sha512"
+    "/home/dh/.nuget/packages/tmds.dbus.protocol/0.21.3/tmds.dbus.protocol.0.21.3.nupkg.sha512"
   ],
   "logs": []
 }

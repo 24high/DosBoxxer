@@ -64,6 +64,7 @@ public sealed class SettingsService : ISettingsService
         settings.MobyGames ??= new MobyGamesSettings();
         settings.Igdb ??= new IgdbSettings();
         settings.Rawg ??= new RawgSettings();
+        settings.GoogleDrive ??= new GoogleDriveSettings();
         settings.Window ??= new WindowStateSettings();
 
         settings.ScreenScraper.DeveloperPassword =
