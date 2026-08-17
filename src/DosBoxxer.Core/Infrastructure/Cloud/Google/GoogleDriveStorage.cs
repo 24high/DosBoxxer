@@ -13,7 +13,8 @@ namespace DosBoxxer.Core.Infrastructure.Cloud.Google;
 /// Google Drive storage backend built directly on the Drive v3 REST API (no SDK dependency, in
 /// keeping with the other metadata clients). All access is scoped to <c>drive.file</c>, i.e. only
 /// the folders and files this application creates. Folder ids are cached by the caller so repeated
-/// syncs do not recreate the <c>dosboxxer/&lt;game-id&gt;</c> hierarchy.
+/// syncs do not recreate the <c>dosboxxer/&lt;Title&gt;-&lt;id8&gt;</c> hierarchy; the naming scheme is
+/// defined by <see cref="GameFolderNamer"/>.
 /// </summary>
 public sealed class GoogleDriveStorage : ICloudStorage
 {
@@ -33,15 +34,40 @@ public sealed class GoogleDriveStorage : ICloudStorage
         _logger = logger;
     }
 
-    public async Task<string> EnsureGameFolderAsync(Guid gameId, string? knownFolderId, CancellationToken cancellationToken = default)
+    public async Task<string> EnsureGameFolderAsync(Guid gameId, string gameTitle, string? knownFolderId, CancellationToken cancellationToken = default)
     {
-        if (!string.IsNullOrEmpty(knownFolderId) && await FolderExistsAsync(knownFolderId, cancellationToken).ConfigureAwait(false))
+        var canonicalName = GameFolderNamer.FolderName(gameId, gameTitle);
+
+        if (!string.IsNullOrEmpty(knownFolderId))
         {
-            return knownFolderId;
+            var known = await GetFolderAsync(knownFolderId, cancellationToken).ConfigureAwait(false);
+            if (known is not null)
+            {
+                // Converge to the canonical name (e.g. after a game rename or when the folder
+                // still carries a legacy game-id name from an older version).
+                if (!string.Equals(known.Value.Name, canonicalName, StringComparison.Ordinal))
+                {
+                    await RenameFolderAsync(knownFolderId, canonicalName, cancellationToken).ConfigureAwait(false);
+                }
+
+                return knownFolderId;
+            }
         }
 
         var rootId = await EnsureFolderAsync(RootFolderName, parentId: null, cancellationToken).ConfigureAwait(false);
-        return await EnsureFolderAsync(gameId.ToString("N"), rootId, cancellationToken).ConfigureAwait(false);
+
+        // Reinstall recovery: adopt an existing folder of a previous installation when the title
+        // prefix matches unambiguously — the new local game id differs, but the savegames are
+        // the same.
+        var siblings = await ListFoldersAsync(rootId, cancellationToken).ConfigureAwait(false);
+        var adopted = GameFolderNamer.PickAdoptableFolder(gameTitle, siblings);
+        if (adopted is not null)
+        {
+            _logger.LogInformation("Adopting existing cloud folder of a previous installation for '{Title}'", gameTitle);
+            return adopted;
+        }
+
+        return await CreateFolderAsync(canonicalName, rootId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<CloudFile>> ListFilesAsync(string gameFolderId, CancellationToken cancellationToken = default)
@@ -185,27 +211,73 @@ public sealed class GoogleDriveStorage : ICloudStorage
 
     // ---- folder helpers -------------------------------------------------------------------
 
-    private async Task<bool> FolderExistsAsync(string folderId, CancellationToken cancellationToken)
+    private async Task<(string Id, string Name)?> GetFolderAsync(string folderId, CancellationToken cancellationToken)
     {
         try
         {
-            var url = $"{ApiBase}/files/{folderId}?fields=id,trashed,mimeType";
+            var url = $"{ApiBase}/files/{folderId}?fields=id,name,trashed,mimeType";
             using var response = await SendAsync(HttpMethod.Get, url, null, cancellationToken).ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                return false;
+                return null;
             }
 
             EnsureSuccess(response, SyncErrorKind.Unexpected);
             using var doc = await ReadJsonAsync(response, cancellationToken).ConfigureAwait(false);
             var root = doc.RootElement;
             var trashed = root.TryGetProperty("trashed", out var t) && t.GetBoolean();
-            return !trashed;
+            var isFolder = root.TryGetProperty("mimeType", out var m) && m.GetString() == FolderMimeType;
+            if (trashed || !isFolder)
+            {
+                return null;
+            }
+
+            return (folderId, root.TryGetProperty("name", out var n) ? n.GetString() ?? string.Empty : string.Empty);
         }
         catch (CloudStorageException ex) when (ex.Kind == SyncErrorKind.Unexpected)
         {
-            return false;
+            return null;
         }
+    }
+
+    private async Task RenameFolderAsync(string folderId, string newName, CancellationToken cancellationToken)
+    {
+        var body = JsonSerializer.Serialize(new Dictionary<string, object> { ["name"] = newName });
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response = await SendAsync(HttpMethod.Patch, $"{ApiBase}/files/{folderId}?fields=id", content, cancellationToken).ConfigureAwait(false);
+        EnsureSuccess(response, SyncErrorKind.Unexpected);
+    }
+
+    /// <summary>Lists the direct sub folders of <paramref name="parentId"/> (id + name, paged).</summary>
+    private async Task<IReadOnlyList<(string Id, string Name)>> ListFoldersAsync(string parentId, CancellationToken cancellationToken)
+    {
+        var results = new List<(string Id, string Name)>();
+        string? pageToken = null;
+        do
+        {
+            var query = Uri.EscapeDataString($"'{parentId}' in parents and mimeType='{FolderMimeType}' and trashed=false");
+            var url = $"{ApiBase}/files?q={query}&fields=nextPageToken,files(id,name)&pageSize=1000&spaces=drive";
+            if (pageToken is not null)
+            {
+                url += $"&pageToken={pageToken}";
+            }
+
+            using var response = await SendAsync(HttpMethod.Get, url, null, cancellationToken).ConfigureAwait(false);
+            using var doc = await ReadJsonAsync(response, cancellationToken).ConfigureAwait(false);
+
+            if (doc.RootElement.TryGetProperty("files", out var files))
+            {
+                foreach (var file in files.EnumerateArray())
+                {
+                    results.Add((file.GetProperty("id").GetString()!, file.GetProperty("name").GetString() ?? string.Empty));
+                }
+            }
+
+            pageToken = doc.RootElement.TryGetProperty("nextPageToken", out var next) ? next.GetString() : null;
+        }
+        while (pageToken is not null);
+
+        return results;
     }
 
     private async Task<string> EnsureFolderAsync(string name, string? parentId, CancellationToken cancellationToken)
@@ -224,7 +296,12 @@ public sealed class GoogleDriveStorage : ICloudStorage
             }
         }
 
-        // Create it.
+        return await CreateFolderAsync(name, parentId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Creates a folder unconditionally (the caller has already ruled out duplicates).</summary>
+    private async Task<string> CreateFolderAsync(string name, string? parentId, CancellationToken cancellationToken)
+    {
         var metadata = new Dictionary<string, object> { ["name"] = name, ["mimeType"] = FolderMimeType };
         if (parentId is not null)
         {

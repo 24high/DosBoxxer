@@ -115,7 +115,7 @@ public sealed class CloudSyncService : ICloudSyncService
         {
             progress?.Report(new SyncProgress { Trigger = trigger, Phase = "connect" });
 
-            var folderId = await _storage.EnsureGameFolderAsync(game.Id, metadata.DriveFolderId, cancellationToken)
+            var folderId = await _storage.EnsureGameFolderAsync(game.Id, game.Title, metadata.DriveFolderId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!string.Equals(folderId, metadata.DriveFolderId, StringComparison.Ordinal))

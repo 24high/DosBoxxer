@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using DosBoxxer.Core.Abstractions;
+using DosBoxxer.Core.Infrastructure.Cloud;
+using DosBoxxer.Core.Infrastructure.Cloud.Google;
 using DosBoxxer.Core.Models.Cloud;
 
 namespace DosBoxxer.Tests.Cloud;
@@ -26,8 +28,14 @@ public sealed class InMemoryCloudStorage : ICloudStorage
     }
 
     private readonly ConcurrentDictionary<string, Dictionary<string, Entry>> _folders = new();
+
+    /// <summary>Folder metadata (name + parent) so the fake mirrors the naming/adoption semantics.</summary>
+    private readonly ConcurrentDictionary<string, (string Name, string? ParentId)> _folderInfos = new();
     private int _nextId;
     private int _activeOps;
+
+    /// <summary>Id of the fake <c>dosboxxer</c> root folder.</summary>
+    public const string RootFolderId = "root";
 
     /// <summary>Highest number of operations observed running at the same time.</summary>
     public int MaxConcurrentOps { get; private set; }
@@ -57,7 +65,21 @@ public sealed class InMemoryCloudStorage : ICloudStorage
 
     public string FolderId(Guid gameId) => "gf-" + gameId.ToString("N");
 
-    public async Task<string> EnsureGameFolderAsync(Guid gameId, string? knownFolderId, CancellationToken cancellationToken = default)
+    /// <summary>Name a folder was given (last rename wins), or <c>null</c> when unknown.</summary>
+    public string? FolderNameOf(string folderId) =>
+        _folderInfos.TryGetValue(folderId, out var info) ? info.Name : null;
+
+    /// <summary>Registers an orphan folder below the root, e.g. one left by a previous installation.</summary>
+    public string SeedFolder(string name)
+    {
+        _folders.GetOrAdd(RootFolderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+        var id = "folder-" + Interlocked.Increment(ref _nextId);
+        _folders.GetOrAdd(id, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+        _folderInfos[id] = (name, RootFolderId);
+        return id;
+    }
+
+    public async Task<string> EnsureGameFolderAsync(Guid gameId, string gameTitle, string? knownFolderId, CancellationToken cancellationToken = default)
     {
         using var _ = await EnterAsync(cancellationToken).ConfigureAwait(false);
         if (FailEnsureFolderWith is not null)
@@ -65,8 +87,32 @@ public sealed class InMemoryCloudStorage : ICloudStorage
             throw FailEnsureFolderWith;
         }
 
+        var canonical = GameFolderNamer.FolderName(gameId, gameTitle);
+
+        // A valid known folder is reused and renamed to the canonical name when needed.
+        if (!string.IsNullOrEmpty(knownFolderId) && _folders.ContainsKey(knownFolderId))
+        {
+            _folderInfos[knownFolderId] = (canonical, RootFolderId);
+            return knownFolderId;
+        }
+
+        _folders.GetOrAdd(RootFolderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+        _folderInfos.TryAdd(RootFolderId, (GoogleDriveStorage.RootFolderName, null));
+
+        // Reinstall recovery: adopt a previous installation's folder on an unambiguous title match.
+        var siblings = _folderInfos
+            .Where(kv => kv.Value.ParentId == RootFolderId && kv.Key != RootFolderId)
+            .Select(kv => (kv.Key, kv.Value.Name))
+            .ToList();
+        var adopted = GameFolderNamer.PickAdoptableFolder(gameTitle, siblings);
+        if (adopted is not null)
+        {
+            return adopted!;
+        }
+
         var id = FolderId(gameId);
         _folders.GetOrAdd(id, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+        _folderInfos[id] = (canonical, RootFolderId);
         return id;
     }
 
