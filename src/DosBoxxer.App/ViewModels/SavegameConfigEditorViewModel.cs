@@ -58,9 +58,13 @@ public sealed partial class SavegameEntryRowViewModel : ViewModelBase
     public SavegameEntry? ToEntry()
     {
         var normalized = SavegamePathParser.NormalizeRelative(Pattern);
-        return normalized is null
-            ? null
-            : new SavegameEntry(normalized, IsGlob ? SavegameEntryKind.Glob : SavegameEntryKind.Path);
+        if (normalized is null)
+        {
+            return null;
+        }
+
+        var isGlob = IsGlob || normalized.Contains('*') || normalized.Contains('?');
+        return new SavegameEntry(normalized, isGlob ? SavegameEntryKind.Glob : SavegameEntryKind.Path);
     }
 
     partial void OnPatternChanged(string value)
