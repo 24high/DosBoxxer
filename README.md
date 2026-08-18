@@ -7,6 +7,8 @@ single click — on **Windows, Linux and macOS** from one code base.
 Built with .NET 8 and [Avalonia UI](https://avaloniaui.net/), MVVM throughout, SQLite for the
 library, and a light Fluent/Metro inspired theme.
 
+## New Feature: Cloudsaves
+
 ---
 
 ## Table of contents
