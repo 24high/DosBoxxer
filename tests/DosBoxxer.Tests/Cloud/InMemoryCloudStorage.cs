@@ -7,16 +7,20 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using DosBoxxer.Core.Abstractions;
-using DosBoxxer.Core.Infrastructure.Cloud;
-using DosBoxxer.Core.Infrastructure.Cloud.Google;
+using DosBoxxer.Core.Helpers;
+using DosBoxxer.Core.Models;
 using DosBoxxer.Core.Models.Cloud;
 
 namespace DosBoxxer.Tests.Cloud;
 
 /// <summary>
 /// In-memory <see cref="ICloudStorage"/> fake. It mirrors the Drive semantics the sync engine
-/// relies on (per-game folder, recursive listing with relative paths, md5, modified time) and can
-/// inject faults and observe concurrency, so the whole engine is testable without any network.
+/// relies on (per-game folder, recursive listing with relative paths, md5, modified time) and
+/// reproduces the cloud game index (<c>dosboxxer/index.json</c>): games are identified by the
+/// normalised settings/catalog/main-folder titles and receive a stable, deterministic cloud id
+/// (<c>00001</c>, <c>00002</c>, …). The folder id is derived from the game id, so tests can
+/// address a game's folder before the first sync. It can inject faults and observe concurrency,
+/// so the whole engine is testable without any network.
 /// </summary>
 public sealed class InMemoryCloudStorage : ICloudStorage
 {
@@ -28,14 +32,11 @@ public sealed class InMemoryCloudStorage : ICloudStorage
     }
 
     private readonly ConcurrentDictionary<string, Dictionary<string, Entry>> _folders = new();
-
-    /// <summary>Folder metadata (name + parent) so the fake mirrors the naming/adoption semantics.</summary>
-    private readonly ConcurrentDictionary<string, (string Name, string? ParentId)> _folderInfos = new();
+    private readonly CloudGameIndex _index = new();
+    private readonly object _indexSync = new();
     private int _nextId;
+    private int _nextSuffix;
     private int _activeOps;
-
-    /// <summary>Id of the fake <c>dosboxxer</c> root folder.</summary>
-    public const string RootFolderId = "root";
 
     /// <summary>Highest number of operations observed running at the same time.</summary>
     public int MaxConcurrentOps { get; private set; }
@@ -48,6 +49,34 @@ public sealed class InMemoryCloudStorage : ICloudStorage
 
     /// <summary>Optional delay to widen the window for concurrency assertions.</summary>
     public TimeSpan OperationDelay { get; set; } = TimeSpan.Zero;
+
+    /// <summary>Snapshot of the current index entries (the fake's <c>index.json</c> content).</summary>
+    public IReadOnlyList<CloudGameIndexEntry> IndexEntries
+    {
+        get
+        {
+            lock (_indexSync)
+            {
+                return _index.Games.ToList();
+            }
+        }
+    }
+
+    /// <summary>Deterministic folder id for a game, stable before and after the first sync.</summary>
+    public string FolderId(Guid gameId) => "gf-" + gameId.ToString("N");
+
+    /// <summary>
+    /// Looks up the folder id <paramref name="game"/> currently maps to via the index, or
+    /// <c>null</c> when the game has no index entry yet (i.e. never synced). Never creates anything.
+    /// </summary>
+    public string? TryGetFolderId(Game game)
+    {
+        lock (_indexSync)
+        {
+            var entry = _index.Find(SettingsKey(game), CatalogKey(game), MainFolderKey(game));
+            return entry?.DriveFolderId;
+        }
+    }
 
     public IReadOnlyDictionary<string, Entry> Snapshot(string folderId) =>
         _folders.TryGetValue(folderId, out var files) ? new Dictionary<string, Entry>(files) : new();
@@ -63,23 +92,7 @@ public sealed class InMemoryCloudStorage : ICloudStorage
         };
     }
 
-    public string FolderId(Guid gameId) => "gf-" + gameId.ToString("N");
-
-    /// <summary>Name a folder was given (last rename wins), or <c>null</c> when unknown.</summary>
-    public string? FolderNameOf(string folderId) =>
-        _folderInfos.TryGetValue(folderId, out var info) ? info.Name : null;
-
-    /// <summary>Registers an orphan folder below the root, e.g. one left by a previous installation.</summary>
-    public string SeedFolder(string name)
-    {
-        _folders.GetOrAdd(RootFolderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
-        var id = "folder-" + Interlocked.Increment(ref _nextId);
-        _folders.GetOrAdd(id, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
-        _folderInfos[id] = (name, RootFolderId);
-        return id;
-    }
-
-    public async Task<string> EnsureGameFolderAsync(Guid gameId, string gameTitle, string? knownFolderId, CancellationToken cancellationToken = default)
+    public async Task<CloudGameFolder> EnsureGameFolderAsync(Game game, string? knownFolderId, CancellationToken cancellationToken = default)
     {
         using var _ = await EnterAsync(cancellationToken).ConfigureAwait(false);
         if (FailEnsureFolderWith is not null)
@@ -87,33 +100,51 @@ public sealed class InMemoryCloudStorage : ICloudStorage
             throw FailEnsureFolderWith;
         }
 
-        var canonical = GameFolderNamer.FolderName(gameId, gameTitle);
-
-        // A valid known folder is reused and renamed to the canonical name when needed.
-        if (!string.IsNullOrEmpty(knownFolderId) && _folders.ContainsKey(knownFolderId))
+        lock (_indexSync)
         {
-            _folderInfos[knownFolderId] = (canonical, RootFolderId);
-            return knownFolderId;
+            var entry = _index.Find(SettingsKey(game), CatalogKey(game), MainFolderKey(game));
+            if (entry is not null)
+            {
+                var folderId = entry.DriveFolderId;
+                if (folderId is null || !_folders.ContainsKey(folderId))
+                {
+                    folderId = FolderId(game.Id);
+                }
+
+                _folders.GetOrAdd(folderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+
+                CloudGameIndex.UpdateNames(entry, SettingsKey(game), CatalogKey(game), MainFolderKey(game));
+                entry.DriveFolderId = folderId;
+                return new CloudGameFolder { FolderId = folderId, CloudGameId = entry.Id };
+            }
+
+            var cloudGameId = _index.GenerateId(
+                () => Interlocked.Increment(ref _nextSuffix).ToString("D5"));
+
+            string newFolderId;
+            if (!string.IsNullOrEmpty(knownFolderId) && _folders.ContainsKey(knownFolderId))
+            {
+                // Pre-index folder adopted as-is (a rename keeps the folder id on Drive).
+                newFolderId = knownFolderId;
+            }
+            else
+            {
+                newFolderId = FolderId(game.Id);
+            }
+
+            _folders.GetOrAdd(newFolderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
+
+            _index.Games.Add(new CloudGameIndexEntry
+            {
+                Id = cloudGameId,
+                SettingsName = NullIfEmpty(SettingsKey(game)),
+                CatalogName = NullIfEmpty(CatalogKey(game)),
+                MainFolderName = NullIfEmpty(MainFolderKey(game)),
+                DriveFolderId = newFolderId,
+            });
+
+            return new CloudGameFolder { FolderId = newFolderId, CloudGameId = cloudGameId };
         }
-
-        _folders.GetOrAdd(RootFolderId, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
-        _folderInfos.TryAdd(RootFolderId, (GoogleDriveStorage.RootFolderName, null));
-
-        // Reinstall recovery: adopt a previous installation's folder on an unambiguous title match.
-        var siblings = _folderInfos
-            .Where(kv => kv.Value.ParentId == RootFolderId && kv.Key != RootFolderId)
-            .Select(kv => (kv.Key, kv.Value.Name))
-            .ToList();
-        var adopted = GameFolderNamer.PickAdoptableFolder(gameTitle, siblings);
-        if (adopted is not null)
-        {
-            return adopted!;
-        }
-
-        var id = FolderId(gameId);
-        _folders.GetOrAdd(id, _ => new Dictionary<string, Entry>(StringComparer.Ordinal));
-        _folderInfos[id] = (canonical, RootFolderId);
-        return id;
     }
 
     public async Task<IReadOnlyList<CloudFile>> ListFilesAsync(string gameFolderId, CancellationToken cancellationToken = default)
@@ -199,6 +230,14 @@ public sealed class InMemoryCloudStorage : ICloudStorage
             }
         }
     }
+
+    private static string SettingsKey(Game game) => CloudGameKey.Normalize(game.Title);
+
+    private static string CatalogKey(Game game) => CloudGameKey.Normalize(game.SavegameConfig?.MatchedCatalogTitle);
+
+    private static string MainFolderKey(Game game) => CloudGameKey.Normalize(Path.GetFileName(PathHelper.Normalize(game.GameDirectory)));
+
+    private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
 
     private async Task<IDisposable> EnterAsync(CancellationToken cancellationToken)
     {

@@ -31,7 +31,7 @@ public sealed class CloudSyncServiceTests
 
         Assert.Equal(SyncStatus.Success, outcome.Status);
         Assert.Equal(1, outcome.Summary.Uploaded);
-        Assert.Equal("hero", System.Text.Encoding.UTF8.GetString(h.Storage.Snapshot(h.Storage.FolderId(game.Id))["SAVE.SAV"].Content));
+        Assert.Equal("hero", h.RemoteContent(game, "SAVE.SAV"));
     }
 
     // (2) File exists only in the cloud -> downloaded.
@@ -40,7 +40,7 @@ public sealed class CloudSyncServiceTests
     {
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud-hero", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud-hero", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
@@ -57,7 +57,7 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "same", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "same", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "same", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
@@ -75,13 +75,13 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "new-local", Base.AddMinutes(10));
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "old-cloud", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "old-cloud", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
 
         Assert.Equal(1, outcome.Summary.Uploaded);
-        Assert.Equal("new-local", System.Text.Encoding.UTF8.GetString(h.Storage.Snapshot(h.Storage.FolderId(game.Id))["SAVE.SAV"].Content));
+        Assert.Equal("new-local", h.RemoteContent(game, "SAVE.SAV"));
     }
 
     // (5) Remote newer -> downloaded.
@@ -91,7 +91,7 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "old-local", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "new-cloud", Base.AddMinutes(10));
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "new-cloud", Base.AddMinutes(10));
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
@@ -107,7 +107,7 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "local-xxxx", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud-yyyy", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud-yyyy", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
@@ -132,7 +132,7 @@ public sealed class CloudSyncServiceTests
 
         // Now change BOTH sides to different content with clearly different times.
         h.WriteLocal("SAVE.SAV", "local-change", Base.AddMinutes(30));
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud-change", Base.AddMinutes(20));
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud-change", Base.AddMinutes(20));
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual, new FixedConflictResolver(null));
 
@@ -147,13 +147,13 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "local-wins", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud-loses", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud-loses", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual, new FixedConflictResolver(ConflictResolution.UseLocal));
 
         Assert.Equal(SyncStatus.Success, outcome.Status);
-        Assert.Equal("local-wins", System.Text.Encoding.UTF8.GetString(h.Storage.Snapshot(h.Storage.FolderId(game.Id))["SAVE.SAV"].Content));
+        Assert.Equal("local-wins", h.RemoteContent(game, "SAVE.SAV"));
         Assert.Equal("local-wins", h.ReadLocal("SAVE.SAV"));
     }
 
@@ -164,7 +164,7 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "local-loses", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud-wins", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud-wins", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual, new FixedConflictResolver(ConflictResolution.UseCloud));
@@ -180,14 +180,14 @@ public sealed class CloudSyncServiceTests
         using var h = new CloudSyncTestHarness();
         var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
         h.WriteLocal("SAVE.SAV", "local", Base);
-        h.Storage.Seed(h.Storage.FolderId(game.Id), "SAVE.SAV", "cloud", Base);
+        await h.SeedRemoteAsync(game, "SAVE.SAV", "cloud", Base);
         var service = h.CreateService(game);
 
         var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual, new FixedConflictResolver(null));
 
         Assert.Equal(SyncStatus.Conflict, outcome.Status);
         Assert.Equal("local", h.ReadLocal("SAVE.SAV"));
-        Assert.Equal("cloud", System.Text.Encoding.UTF8.GetString(h.Storage.Snapshot(h.Storage.FolderId(game.Id))["SAVE.SAV"].Content));
+        Assert.Equal("cloud", h.RemoteContent(game, "SAVE.SAV"));
     }
 
     // (11) Upload fails -> reported, local savegame intact.
@@ -505,5 +505,82 @@ public sealed class CloudSyncServiceTests
         Assert.Equal(1, outcome.Summary.Downloaded);
         Assert.Equal("cloud-hero", h.ReadLocal("DOS/SAVE.SAV"));
         Assert.False(h.LocalExists("SAVE.SAV"));
+    }
+
+    // The cloud game id is a plain unique id (e.g. "00001"), not "<name>-<suffix>".
+    [Fact]
+    public async Task CloudGameId_IsAPlainUniqueId()
+    {
+        using var h = new CloudSyncTestHarness();
+        var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
+        h.WriteLocal("SAVE.SAV", "hero", Base);
+        var service = h.CreateService(game);
+
+        await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
+
+        var entry = Assert.Single(h.Storage.IndexEntries);
+        Assert.Equal("00001", entry.Id);
+        Assert.DoesNotContain("-", entry.Id);
+    }
+
+    // The index entry links the normalised settings title, catalog title and main folder name.
+    [Fact]
+    public async Task IndexEntry_ContainsSettingsCatalogAndMainFolderKeys()
+    {
+        using var h = new CloudSyncTestHarness();
+        var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
+        game.SavegameConfig.MatchedCatalogTitle = "The Secret of Monkey Island";
+        game.GameDirectory = Path.Combine(h.GameDirectory, "Monkey Island");
+        game.Title = "Monkey Island (Special Edition)";
+        h.WriteLocal("SAVE.SAV", "hero", Base);
+        var service = h.CreateService(game);
+
+        await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
+
+        var entry = Assert.Single(h.Storage.IndexEntries);
+        Assert.Equal("monkeyislandspecialedition", entry.SettingsName);
+        Assert.Equal("thesecretofmonkeyisland", entry.CatalogName);
+        Assert.Equal("monkeyisland", entry.MainFolderName);
+    }
+
+    // After a reinstallation (fresh metadata store, same titles/folder) the same id is recovered.
+    [Fact]
+    public async Task Reinstall_RecoversTheSameCloudGameId()
+    {
+        var sharedStorage = new InMemoryCloudStorage();
+
+        string firstFolderId;
+        using (var h = new CloudSyncTestHarness(storage: sharedStorage))
+        {
+            var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
+            game.SavegameConfig.MatchedCatalogTitle = "DreamWeb";
+            game.GameDirectory = Path.Combine(h.GameDirectory, "DreamWeb");
+            game.Title = "DreamWeb";
+            h.WriteLocal("SAVE.SAV", "hero", Base);
+            var service = h.CreateService(game);
+
+            await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
+
+            firstFolderId = h.Storage.TryGetFolderId(game)!;
+            Assert.NotNull(firstFolderId);
+        }
+
+        // "Reinstall": a brand-new harness (fresh temp dirs and metadata store), same cloud storage,
+        // same game titles and main folder name.
+        using (var h = new CloudSyncTestHarness(storage: sharedStorage))
+        {
+            var game = h.NewGame(entries: new SavegameEntry("SAVE.SAV", SavegameEntryKind.Path));
+            game.SavegameConfig.MatchedCatalogTitle = "DreamWeb";
+            game.GameDirectory = Path.Combine(h.GameDirectory, "DreamWeb");
+            game.Title = "DreamWeb";
+            h.WriteLocal("SAVE.SAV", "hero2", Base);
+            var service = h.CreateService(game);
+
+            var outcome = await service.SyncGameAsync(game.Id, SyncTrigger.Manual);
+
+            Assert.Equal(SyncStatus.Success, outcome.Status);
+            Assert.Equal(h.Storage.TryGetFolderId(game), firstFolderId);
+            Assert.Single(h.Storage.IndexEntries);
+        }
     }
 }

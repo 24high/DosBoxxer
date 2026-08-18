@@ -140,6 +140,36 @@ public sealed class SavegamePathTests
     }
 
     [Fact]
+    public void GlobInSubdirectory_IsFoundWhenRootYieldsNothing()
+    {
+        using var temp = new TempDirectory();
+        var dir = temp.CreateSubdirectory("game");
+        temp.CreateFile("game/DREAMWEB/DREAMWEB.D00", "save 0");
+        temp.CreateFile("game/DREAMWEB/DREAMWEB.D01", "save 1");
+        temp.CreateFile("game/DREAMWEB/README.TXT", "not a save");
+
+        var files = Scanner().Enumerate(dir, Config(new SavegameEntry("DREAMWEB.D0*", SavegameEntryKind.Glob)));
+
+        Assert.Equal(2, files.Count);
+        Assert.Contains(files, f => f.RelativePath == "DREAMWEB/DREAMWEB.D00");
+        Assert.Contains(files, f => f.RelativePath == "DREAMWEB/DREAMWEB.D01");
+    }
+
+    [Fact]
+    public void GlobWithExplicitSubdirectory_DoesNotSearchDeeper()
+    {
+        using var temp = new TempDirectory();
+        var dir = temp.CreateSubdirectory("game");
+        temp.CreateFile("game/SAVE/slot1.dat", "1");
+        temp.CreateFile("game/SAVE/nested/slot2.dat", "2");
+
+        var files = Scanner().Enumerate(dir, Config(new SavegameEntry("SAVE/*.dat", SavegameEntryKind.Glob)));
+
+        Assert.Single(files);
+        Assert.Equal("SAVE/slot1.dat", files[0].RelativePath);
+    }
+
+    [Fact]
     public void MissingGameDirectory_ResolvesToNothing()
     {
         using var temp = new TempDirectory();

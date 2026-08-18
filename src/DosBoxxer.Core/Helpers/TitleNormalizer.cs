@@ -103,7 +103,7 @@ public static partial class TitleNormalizer
     /// <summary>The significant tokens joined by single spaces — the "compact" comparison key.</summary>
     public static string NormalizeCompact(string? title) => string.Join(' ', Tokenize(title));
 
-    private static string FoldDiacritics(string value)
+    internal static string FoldDiacritics(string value)
     {
         var decomposed = value.Normalize(NormalizationForm.FormD);
         var builder = new StringBuilder(decomposed.Length);

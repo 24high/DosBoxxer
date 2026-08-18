@@ -1,3 +1,4 @@
+using DosBoxxer.Core.Models;
 using DosBoxxer.Core.Models.Cloud;
 
 namespace DosBoxxer.Core.Abstractions;
@@ -14,13 +15,14 @@ namespace DosBoxxer.Core.Abstractions;
 public interface ICloudStorage
 {
     /// <summary>
-    /// Ensures the <c>dosboxxer/&lt;Title&gt;-&lt;id8&gt;/</c> folder exists (creating <c>dosboxxer</c> if
-    /// necessary) and returns its id. A previously cached <paramref name="knownFolderId"/> is
-    /// verified and reused when still valid — being renamed to the canonical name when it
-    /// deviates. Without a valid known id an existing folder from a previous installation is
-    /// adopted when the title prefix matches unambiguously; otherwise a new folder is created.
+    /// Resolves the game's cloud folder via the cloud game index (<c>dosboxxer/index.json</c>):
+    /// the stable cloud game id is looked up by the normalised settings title, savegame-catalog
+    /// title and main-directory folder name of <paramref name="game"/> (or registered as a new
+    /// entry on first contact), and the <c>dosboxxer/&lt;cloud-game-id&gt;/</c> folder is created
+    /// when missing. A previously cached <paramref name="knownFolderId"/> from a pre-index
+    /// installation is adopted into the index.
     /// </summary>
-    Task<string> EnsureGameFolderAsync(Guid gameId, string gameTitle, string? knownFolderId, CancellationToken cancellationToken = default);
+    Task<CloudGameFolder> EnsureGameFolderAsync(Game game, string? knownFolderId, CancellationToken cancellationToken = default);
 
     /// <summary>Recursively lists all files below <paramref name="gameFolderId"/> with game-relative paths.</summary>
     Task<IReadOnlyList<CloudFile>> ListFilesAsync(string gameFolderId, CancellationToken cancellationToken = default);

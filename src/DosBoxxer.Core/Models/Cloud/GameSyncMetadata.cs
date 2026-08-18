@@ -29,8 +29,14 @@ public sealed class GameSyncMetadata
 {
     public Guid GameId { get; set; }
 
-    /// <summary>Google Drive folder id of <c>dosboxxer/&lt;game-id&gt;/</c>, cached to avoid re-lookups.</summary>
+    /// <summary>Google Drive folder id of <c>dosboxxer/&lt;cloud-game-id&gt;/</c>, cached to avoid re-lookups.</summary>
     public string? DriveFolderId { get; set; }
+
+    /// <summary>
+    /// Stable cloud game id from <c>dosboxxer/index.json</c> (the folder name, e.g.
+    /// <c>48392</c>). Informational — the id is always re-resolved via the index.
+    /// </summary>
+    public string? CloudGameId { get; set; }
 
     public DateTimeOffset? LastSuccessfulSyncUtc { get; set; }
 
@@ -42,6 +48,7 @@ public sealed class GameSyncMetadata
         {
             GameId = GameId,
             DriveFolderId = DriveFolderId,
+            CloudGameId = CloudGameId,
             LastSuccessfulSyncUtc = LastSuccessfulSyncUtc,
         };
 

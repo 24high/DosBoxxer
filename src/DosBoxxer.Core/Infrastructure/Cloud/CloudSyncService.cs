@@ -115,14 +115,18 @@ public sealed class CloudSyncService : ICloudSyncService
         {
             progress?.Report(new SyncProgress { Trigger = trigger, Phase = "connect" });
 
-            var folderId = await _storage.EnsureGameFolderAsync(game.Id, game.Title, metadata.DriveFolderId, cancellationToken)
+            var folder = await _storage.EnsureGameFolderAsync(game, metadata.DriveFolderId, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!string.Equals(folderId, metadata.DriveFolderId, StringComparison.Ordinal))
+            if (!string.Equals(folder.FolderId, metadata.DriveFolderId, StringComparison.Ordinal) ||
+                !string.Equals(folder.CloudGameId, metadata.CloudGameId, StringComparison.Ordinal))
             {
-                metadata.DriveFolderId = folderId;
+                metadata.DriveFolderId = folder.FolderId;
+                metadata.CloudGameId = folder.CloudGameId;
                 await _metadataStore.SaveAsync(metadata, cancellationToken).ConfigureAwait(false);
             }
+
+            var folderId = folder.FolderId;
 
             progress?.Report(new SyncProgress { Trigger = trigger, Phase = "compare" });
 

@@ -125,14 +125,14 @@ public sealed class CloudSyncTestHarness : IDisposable
 {
     private readonly TempDirectory _temp;
 
-    public CloudSyncTestHarness(bool cloudConfigured = true)
+    public CloudSyncTestHarness(bool cloudConfigured = true, InMemoryCloudStorage? storage = null)
     {
         _temp = new TempDirectory();
         Paths = new AppPaths(Path.Combine(_temp.Path, "appdata"), Path.Combine(_temp.Path, "program"));
         Paths.EnsureCreated();
 
         GameDirectory = _temp.CreateSubdirectory("game");
-        Storage = new InMemoryCloudStorage();
+        Storage = storage ?? new InMemoryCloudStorage();
         Auth = new StubCloudAuth();
         Settings = new StubSyncSettings(cloudConfigured);
         MetadataStore = new SyncMetadataStore(Paths, NullLogger<SyncMetadataStore>.Instance);
@@ -197,6 +197,35 @@ public sealed class CloudSyncTestHarness : IDisposable
         }
 
         return path;
+    }
+
+    /// <summary>
+    /// Registers the game in the in-memory cloud index (as a previous sync would have done) and
+    /// seeds a remote file. Returns the cloud folder id.
+    /// </summary>
+    public async Task<string> SeedRemoteAsync(Game game, string relativePath, string content, DateTimeOffset modified)
+    {
+        var folder = await Storage.EnsureGameFolderAsync(game, knownFolderId: null);
+        Storage.Seed(folder.FolderId, relativePath, content, modified);
+        return folder.FolderId;
+    }
+
+    /// <summary>All remote files of the game's cloud folder (fails when the game was never synced).</summary>
+    public IReadOnlyDictionary<string, InMemoryCloudStorage.Entry> RemoteFiles(Game game) =>
+        Storage.Snapshot(Storage.TryGetFolderId(game) ?? throw new InvalidOperationException("No cloud folder for the game"));
+
+    /// <summary>Remote file content as UTF-8, or <c>null</c> when the file (or folder) does not exist.</summary>
+    public string? RemoteContent(Game game, string relativePath)
+    {
+        var folderId = Storage.TryGetFolderId(game);
+        if (folderId is null)
+        {
+            return null;
+        }
+
+        return Storage.Snapshot(folderId).TryGetValue(relativePath, out var entry)
+            ? System.Text.Encoding.UTF8.GetString(entry.Content)
+            : null;
     }
 
     public string ReadLocal(string relativePath) =>

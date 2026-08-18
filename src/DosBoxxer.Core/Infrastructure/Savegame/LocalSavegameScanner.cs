@@ -1,4 +1,3 @@
-using System.IO.Enumeration;
 using DosBoxxer.Core.Abstractions;
 using DosBoxxer.Core.Helpers;
 using DosBoxxer.Core.Models;
@@ -9,13 +8,10 @@ namespace DosBoxxer.Core.Infrastructure.Savegame;
 
 /// <summary>
 /// Resolves savegame declarations to actual files on disk. Directory entries are expanded
-/// recursively; glob entries are matched inside their (optional) sub directory — recursively when
-/// they carry no sub directory prefix, because menu launchers can move the DOS working directory
-/// into any sub folder of the game directory. Every result is verified to stay within the game
-/// directory, so a malformed pattern can never reach unrelated parts of the file system. All
-/// matching is case-insensitive: DOS file systems (and DOSBox) ignore case, so a pattern must find
-/// the file regardless of the casing the game happened to write — even on case-sensitive host file
-/// systems.
+/// recursively; glob entries are matched with <c>Directory.EnumerateFiles</c> inside their
+/// (optional) sub directory, falling back to a recursive search when the top directory yields
+/// nothing. Every result is verified to stay within the game directory, so a malformed pattern
+/// can never reach unrelated parts of the file system.
 /// </summary>
 public sealed class LocalSavegameScanner : ILocalSavegameScanner
 {
@@ -78,11 +74,7 @@ public sealed class LocalSavegameScanner : ILocalSavegameScanner
 
     private void ExpandPath(string root, string pattern, Dictionary<string, LocalSavegameFile> results)
     {
-        var absolute = ResolveCaseInsensitive(root, pattern);
-        if (absolute is null)
-        {
-            return;
-        }
+        var absolute = Path.GetFullPath(Path.Combine(root, pattern.Replace('/', Path.DirectorySeparatorChar)));
 
         if (!PathHelper.IsWithin(root, absolute))
         {
@@ -103,47 +95,6 @@ public sealed class LocalSavegameScanner : ILocalSavegameScanner
         }
     }
 
-    /// <summary>
-    /// Resolves a relative pattern segment by segment, falling back to a case-insensitive lookup
-    /// whenever the exact casing is not present. DOS games do not observe host file name casing,
-    /// so a declared <c>SAVE/highscores.dat</c> must also find <c>save/HIGHSCORES.DAT</c>.
-    /// Returns <c>null</c> when any segment is absent.
-    /// </summary>
-    private static string? ResolveCaseInsensitive(string root, string pattern)
-    {
-        var current = root;
-
-        foreach (var segment in pattern.Split('/', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var direct = Path.Combine(current, segment);
-            if (Directory.Exists(direct) || File.Exists(direct))
-            {
-                current = direct;
-                continue;
-            }
-
-            try
-            {
-                var match = Directory
-                    .EnumerateFileSystemEntries(current)
-                    .FirstOrDefault(e => string.Equals(Path.GetFileName(e), segment, StringComparison.OrdinalIgnoreCase));
-
-                if (match is null)
-                {
-                    return null;
-                }
-
-                current = match;
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                return null;
-            }
-        }
-
-        return Path.GetFullPath(current);
-    }
-
     private void ExpandGlob(string root, string pattern, Dictionary<string, LocalSavegameFile> results)
     {
         // Split into an optional directory prefix and the file mask.
@@ -158,23 +109,27 @@ public sealed class LocalSavegameScanner : ILocalSavegameScanner
 
         var searchDir = subDir.Length == 0
             ? root
-            : ResolveCaseInsensitive(root, subDir);
+            : Path.GetFullPath(Path.Combine(root, subDir.Replace('/', Path.DirectorySeparatorChar)));
 
-        if (searchDir is null || !PathHelper.IsWithin(root, searchDir) || !Directory.Exists(searchDir))
+        if (!PathHelper.IsWithin(root, searchDir) || !Directory.Exists(searchDir))
         {
             return;
         }
 
-        // A glob without a sub directory prefix is matched recursively from the base directory:
-        // menu launchers (run.bat → "cd DREAMWEB") make the DOS working directory a sub folder of
-        // the game directory, so the savegames are not necessarily next to the launch file. A glob
-        // that addresses a sub directory itself stays confined to that folder. Matching is
-        // case-insensitive on every platform (DOS file name semantics); the native mask overload
-        // of EnumerateFiles is case-sensitive on Linux, so it cannot be used here.
-        var searchOption = subDir.Length == 0 ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-        foreach (var file in Directory.EnumerateFiles(searchDir, "*", searchOption))
+        // Top directory only: a glob does not recurse unless it addresses a sub directory itself.
+        var countBefore = results.Count;
+        foreach (var file in Directory.EnumerateFiles(searchDir, mask, SearchOption.TopDirectoryOnly))
         {
-            if (FileSystemName.MatchesSimpleExpression(mask, Path.GetFileName(file), ignoreCase: true))
+            AddFile(root, file, results);
+        }
+
+        // Many DOS games store their savegames in a sub directory of the game folder (e.g.
+        // <game>/SAVE/) that the manifest pattern omits. When the top directory yields nothing,
+        // fall back to a recursive search so those savegames are still found. An explicit sub
+        // directory in the pattern is always honoured literally, never searched recursively.
+        if (results.Count == countBefore)
+        {
+            foreach (var file in Directory.EnumerateFiles(searchDir, mask, SearchOption.AllDirectories))
             {
                 AddFile(root, file, results);
             }
