@@ -8,6 +8,7 @@ Built with .NET 8 and [Avalonia UI](https://avaloniaui.net/), MVVM throughout, S
 library, and a light Fluent/Metro inspired theme.
 
 ## New Feature: Cloudsaves
+## Make sure to configure settings before use!
 
 ---
 
