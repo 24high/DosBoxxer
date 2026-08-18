@@ -38,37 +38,11 @@ library, and a light Fluent/Metro inspired theme.
 
 ## Screenshots
 
-The repository ships without binary screenshots. To produce your own for documentation:
-
-1. Start the application (see [Running](#running)).
-2. Add two or three games so the library grid is populated.
-3. Capture the window with your platform's screenshot tool
-   (Windows: <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>, macOS:
-   <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>4</kbd> then <kbd>Space</kbd>, GNOME:
-   <kbd>Alt</kbd>+<kbd>Print</kbd>).
-4. Save them as `docs/screenshots/library.png`, `docs/screenshots/details.png` and
-   `docs/screenshots/wizard.png`, then reference them here.
-
 The main window is laid out in three columns:
 
-```
-┌──────────────┬──────────────────────────────────────┬───────────────────┐
-│  Categories  │  Toolbar: search · sort · size · +   │                   │
-│              ├──────────────────────────────────────┤   Game details    │
-│  All Games   │                                      │                   │
-│  Favorites   │   ┌──────┐ ┌──────┐ ┌──────┐         │   Cover           │
-│  Recent      │   │cover │ │cover │ │cover │         │   Title / genres  │
-│              │   ├──────┤ ├──────┤ ├──────┤         │   [ PLAY ]        │
-│  Action      │   │ DOOM │ │ KEEN │ │ CIV  │         │   Facts           │
-│  Adventure   │   └──────┘ └──────┘ └──────┘         │   Description     │
-│  …           │                                      │   Screenshots     │
-│              │                                      │   Statistics      │
-├──────────────┴──────────────────────────────────────┴───────────────────┤
-│  Status bar                                                             │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+<img width="1920" height="1037" alt="grafik" src="https://github.com/user-attachments/assets/0d4ba86b-fec0-48b1-b6eb-680021d4897f" />
 
----
+
 
 ## Features
 
