@@ -211,7 +211,7 @@ any provider keeps working even after you switch.
 
 | Provider | Auth | How to get it | DOS coverage |
 |---|---|---|---|
-| **MobyGames** | API key | Requested from MobyGames (manual, free) | Very good |
+| **MobyGames** | API key | Requested from MobyGames (paid) | Very good |
 | **IGDB** | Client ID + Client Secret | **Instant, free** — register an app at [dev.twitch.tv](https://dev.twitch.tv/console/apps) | Very good |
 | **RAWG** | API key | **Instant, free** — sign up at [rawg.io](https://rawg.io/apidocs) | Thinner for DOS; often modern cover art |
 
